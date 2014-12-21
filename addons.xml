@@ -2,7 +2,7 @@
 <addons>
 	<addon id="plugin.video.watch.is.dev"
        name="Watch.Is"
-       version="0.0.3"
+       version="0.0.4"
        provider-name="Evgenii Devisok aka evgen_dev">
 	<requires>
 		<import addon="xbmc.python" version="2.1.0"/>

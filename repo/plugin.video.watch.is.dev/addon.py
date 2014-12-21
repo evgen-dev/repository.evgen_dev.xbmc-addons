@@ -138,12 +138,17 @@ def parseMovies(html):
                         '\n<div class="hd"><img src="/templates/images/hd.png" alt=""></div><div class="info">',re.S).findall(html)
 
     movies = re.compile('<div class="name"><a href="([^"]+)" class="name"><strong>([^<]+)</strong>',re.S).findall(html)
+    views = re.compile('<div class="votes"><img src="/templates/images/vote.png" alt=""><span class="text">([\-\d]+)</span></div>',re.S).findall(html)
+    rating = re.compile('<div class="views"><img src="/templates/images/views.png" alt=""><span class="text">([\-\d]+)</span></div>',re.S).findall(html)
+
     i = 0
     for url, title in movies:
+        movies[i] = list(movies[i])
         if(url in hd_movies):
-            movies[i] = list(movies[i])
             movies[i][1] = title+' (HD)'
-            movies[i] = tuple(movies[i])
+
+        movies[i][1] = movies[i][1]+' - [COLOR red]%s[/COLOR]' %rating[i] + ' / ' + '[COLOR yellow]%s[/COLOR]' %views[i]
+        movies[i] = tuple(movies[i])
         i = i + 1
 
     return movies
@@ -191,7 +196,7 @@ def viewAllMovies(page=0):
         addDir('[COLOR blue]<< Первая страница[/COLOR]', '', "allmovie", 0)
         addDir('[COLOR green]< Предылущая страница[/COLOR]', '', "allmovie", page-1)
 
-    genreHtml =  request(siteUrl+'?page='+str(page), {})
+    genreHtml =  request(siteUrl+'/?page='+str(page), {})
     genresMovies = parseMovies(genreHtml)
     for url, title in genresMovies:
         addDirLink(title, url, "movie_info")
@@ -241,6 +246,7 @@ def showMovieInfo(url):
     progress.update(50)
     movieHtml =  request(siteUrl+url, {})
     movieInfo = {}
+    movieInfo['movieHtml'] = movieHtml
     progress.update(75)
     direct_url = re.compile('file:"([^"]+)"',re.S).findall(movieHtml)
 

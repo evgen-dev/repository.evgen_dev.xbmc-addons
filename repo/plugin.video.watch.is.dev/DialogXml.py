@@ -1,6 +1,8 @@
 # -*- coding: utf-8 -*-
 
+import sys, urllib, urllib2, re, os, cookielib, traceback, datetime
 import xbmc, xbmcgui, xbmcaddon
+from DialogReviews import *
 
 KEY_BUTTON_BACK = 275
 KEY_KEYBOARD_ESC = 61467
@@ -70,6 +72,13 @@ class DialogXml(xbmcgui.WindowXMLDialog):
                 xbmc.Player().play(self.movieInfo['direct_url_hq'], self.listitem)
             else:
                 xbmc.Player().play(self.movieInfo['direct_url'], self.listitem)
+
+        if(controlID == 33):
+            __settings__ = xbmcaddon.Addon(id='plugin.video.watch.is.dev')
+            path = xbmc.translatePath(os.path.join(__settings__.getAddonInfo('path').replace(';', ''), ''))
+            w = DialogReviews("reviews.xml", path, "Default")
+            w.doModal(self.movieInfo['movieHtml'])
+            del w
 
     def onFocus(self, controlID):
         #print "onFocus(): control %i" % controlID
