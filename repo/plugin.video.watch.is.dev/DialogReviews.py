@@ -1,7 +1,18 @@
 # -*- coding: utf-8 -*-
 
-import sys, urllib, urllib2, re, os, cookielib, traceback, datetime
+import sys, urllib, urllib2, re, os, cookielib, traceback, datetime, htmlentitydefs
 import xbmc, xbmcgui, xbmcaddon
+
+pattern = re.compile("&(\w+?);")
+
+def html_entity_decode_char(m, defs=htmlentitydefs.entitydefs):
+    try:
+        return defs[m.group(1)]
+    except KeyError:
+        return m.group(0)
+
+def html_entity_decode(string):
+    return pattern.sub(html_entity_decode_char, string)
 
 KEY_BUTTON_BACK = 275
 KEY_KEYBOARD_ESC = 61467
@@ -45,6 +56,6 @@ class DialogReviews(xbmcgui.WindowXMLDialog):
         i = 0
         for text in reviews_texts:
             texts = texts+"\n[B][COLOR purple]"+reviews_autors[i]+"[/COLOR][/B] [I]"+reviews_dates[i]+"[/I]\n"
-            texts = texts+text+"\n"
+            texts = texts+html_entity_decode(text)+"\n"
             i = i + 1
         return texts

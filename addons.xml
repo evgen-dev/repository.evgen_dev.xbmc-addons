@@ -2,7 +2,7 @@
 <addons>
 	<addon id="plugin.video.watch.is.dev"
        name="Watch.Is"
-       version="0.0.4"
+       version="0.0.5"
        provider-name="Evgenii Devisok aka evgen_dev">
 	<requires>
 		<import addon="xbmc.python" version="2.1.0"/>
@@ -14,11 +14,12 @@
 		<summary>Watch.Is</summary>
 		<description>
 			Плагин для он-лайн кинотеатра Watch.Is
+			Приятного просмотра.
 		</description>
 		<platform>all</platform>
 		<license>GNU GENERAL PUBLIC LICENSE. Version 2, June 1991</license>
 		<forum>http://xbmc.ru/forum/showthread.php?t=4730</forum>
-		<email>xbmc at devisok dot org</email>
+		<email>xbmc.devisok.org</email>
 	</extension>
 </addon>
 </addons>

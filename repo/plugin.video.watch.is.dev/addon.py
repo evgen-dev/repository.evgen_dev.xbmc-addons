@@ -13,7 +13,9 @@ def Alert(title, message):
     xbmcgui.Dialog().ok(title, message)
 
 __settings__ = xbmcaddon.Addon(id='plugin.video.watch.is.dev')
-plugin_icon = xbmc.translatePath(os.path.join(__settings__.getAddonInfo('path').replace(';', ''), 'icon.png'))
+plugin_path = __settings__.getAddonInfo('path').replace(';', '');
+plugin_icon = xbmc.translatePath(os.path.join(plugin_path, 'icon.png'))
+context_path = xbmc.translatePath(os.path.join(plugin_path, 'addon.py'))
 sid_file = os.path.join(xbmc.translatePath('special://temp/'), 'plugin_video_watch_is_dev.sid')
 
 username = __settings__.getSetting('username')
@@ -96,13 +98,24 @@ def addDir(title, url, mode, page=0, searchValue=''):
     item = xbmcgui.ListItem(title, iconImage='DefaultFolder.png', thumbnailImage='')
     xbmcplugin.addDirectoryItem(handle=int(sys.argv[1]), url=sys_url, listitem=item, isFolder=True)
 
-def addDirLink(title, url, mode, page=0, icon="DefaultFolder.png"):
+def addDirLink(title, url, mode, page=0, icon="DefaultFolder.png", inbookmarks=False):
     sys_url = sys.argv[0] + '?title=' + urllib.quote_plus(title) + '&url=' + urllib.quote_plus(url) + \
               '&mode=' + urllib.quote_plus(str(mode)) + '&page=' + urllib.quote_plus(str(page))
     id = url.split('/')
 
     item = xbmcgui.ListItem(title, iconImage=icon, thumbnailImage='')
     item.setIconImage(siteUrl+'/posters/'+id[1]+'.jpg')
+
+
+    contextMenuItems = []
+    if inbookmarks:
+        contextMenuItems.append(('Удалить из закладок', 'XBMC.RunScript(%s,%i,%s)' %
+                            (context_path, 1, 'mode=remove_bookmark&url='+id[1])))
+    else:
+        contextMenuItems.append(('Добавить в закладки', 'XBMC.RunScript(%s,%i,%s)' %
+                            (context_path, 1, 'mode=add_bookmark&url='+id[1])))
+
+    item.addContextMenuItems(contextMenuItems, replaceItems=True)
     xbmcplugin.addDirectoryItem(handle=int(sys.argv[1]), url=sys_url, listitem=item, isFolder=False)
 
 def getBookmarkNum():
@@ -113,12 +126,11 @@ def getBookmarkNum():
     else:
         return bookmarks[0]
 
-
-
 def homePage():
     addDir("Поиск", siteUrl, "search")
     addDir("Новые фильмы", siteUrl+'/?genre=0&year='+str(datetime.date.today().year)+'&sorting=added&order=desc', "newmovie")
     addDir("Лучшие фильмы", siteUrl+'/top', "topmovie")
+    addDir("Фильмы по рейтингу", siteUrl, "view_rating")
     addDir("Фильмы по жанрам", siteUrl, "genres")
     addDir("Фильмы по годам", siteUrl, "years")
     addDir("Все фильмы", '', "allmovie")
@@ -172,8 +184,8 @@ def viewSelectedGenre(genreUrl, page=0):
 
     maxPage = getMaxPage(genreHtml)
     if(maxPage > page):
-        addDir('[COLOR blue]Следущая страница >[/COLOR]', genreUrl+'&year=0&sorting=&order=&kinopoisk=', "view_genre", page+1)
-        addDir('[COLOR green]Последняя страница >>[/COLOR]', genreUrl+'&year=0&sorting=&order=&kinopoisk=', "view_genre", maxPage)
+        addDir('[COLOR green]Следущая страница >[/COLOR]', genreUrl+'&year=0&sorting=&order=&kinopoisk=', "view_genre", page+1)
+        addDir('[COLOR blue]Последняя страница >>[/COLOR]', genreUrl+'&year=0&sorting=&order=&kinopoisk=', "view_genre", maxPage)
 
 
 def viewSelectedYear(genreUrl, page=0):
@@ -188,8 +200,25 @@ def viewSelectedYear(genreUrl, page=0):
 
     maxPage = getMaxPage(genreHtml)
     if(maxPage > page):
-        addDir('[COLOR blue]Следущая страница >[/COLOR]', genreUrl+'&sorting=&order=&kinopoisk=', "view_year", page+1)
-        addDir('[COLOR green]Последняя страница >>[/COLOR]', genreUrl+'&sorting=&order=&kinopoisk=', "view_year", maxPage)
+        addDir('[COLOR green]Следущая страница >[/COLOR]', genreUrl+'&sorting=&order=&kinopoisk=', "view_year", page+1)
+        addDir('[COLOR blue]Последняя страница >>[/COLOR]', genreUrl+'&sorting=&order=&kinopoisk=', "view_year", maxPage)
+
+
+def viewOrderByRating(page=0):
+    if page > 0:
+        addDir('[COLOR blue]<< Первая страница[/COLOR]', '/?genre=0&year=0&sorting=rating&order=desc', "view_rating", 0)
+        addDir('[COLOR green]< Предылущая страница[/COLOR]', '/?genre=0&year=0&sorting=rating&order=desc', "view_rating", page-1)
+    genreHtml =  request(siteUrl+'/?genre=0&year=0&sorting=rating&order=desc&page='+str(page), {})
+
+    genresMovies = parseMovies(genreHtml)
+    for url, title in genresMovies:
+        addDirLink(title, url, "movie_info")
+
+    maxPage = getMaxPage(genreHtml)
+    if(maxPage > page):
+        addDir('[COLOR green]Следущая страница >[/COLOR]', '/?genre=0&year=0&sorting=rating&order=desc', "view_rating", page+1)
+        addDir('[COLOR blue]Последняя страница >>[/COLOR]', '/?genre=0&year=0&sorting=rating&order=desc', "view_rating", maxPage)
+
 
 def viewAllMovies(page=0):
     if page > 0:
@@ -203,8 +232,8 @@ def viewAllMovies(page=0):
 
     maxPage = getMaxPage(genreHtml)
     if(maxPage > page):
-        addDir('[COLOR blue]Следущая страница >[/COLOR]', '', "allmovie", page+1)
-        addDir('[COLOR green]Последняя страница >>[/COLOR]', '', "allmovie", maxPage)
+        addDir('[COLOR green]Следущая страница >[/COLOR]', '', "allmovie", page+1)
+        addDir('[COLOR blue]Последняя страница >>[/COLOR]', '', "allmovie", maxPage)
 
 
 def viewTopMovie():
@@ -217,7 +246,7 @@ def viewBookmarks():
     genreHtml =  request(siteUrl+'/bookmark', {})
     genresMovies = parseMovies(genreHtml)
     for url, title in genresMovies:
-        addDirLink(title, url, "movie_info")
+        addDirLink(title, url, "movie_info", inbookmarks=True)
 
 def viewNewMovies(uri):
     genreHtml =  request(uri, {})
@@ -334,14 +363,23 @@ def viewSearchResult(searchValue, page=0):
 
     maxPage = getMaxPage(genreHtml)
     if(maxPage > page):
-        addDir('[COLOR blue]Следущая страница >[/COLOR]', '', "search_page", page+1, searchValue)
-        addDir('[COLOR green]Последняя страница >>[/COLOR]', '', "search_page", maxPage, searchValue)
+        addDir('[COLOR green]Следущая страница >[/COLOR]', '', "search_page", page+1, searchValue)
+        addDir('[COLOR blue]Последняя страница >>[/COLOR]', '', "search_page", maxPage, searchValue)
 
 def showYearsList():
     now_time = datetime.datetime.now()
     for x in reversed(range(1900, int(now_time.year)+1)):
         addDir(str(x), '/?genre=0&year='+str(x)+'&sorting=&order=&kinopoisk', "view_year")
 
+
+def add_bookmark(id):
+    result = request(siteUrl+'/jquery', {'action' : 'bookmark_add', 'video_id' : id})
+    Notificator('Добавление закладки', result.strip(' \t\n\r'), 3000)
+
+def remove_bookmark(id):
+    request(siteUrl+'/bookmark', {'bookmark_delete' : 'Удалить отмеченные', 'bids[]' : id})
+    Notificator('Удаление закладки', 'Закладка удалена', 3000)
+    xbmc.executebuiltin('Container.Refresh()')
 
 try:
     progress = xbmcgui.DialogProgress()
@@ -371,7 +409,8 @@ try:
         progress.update(0)
 
     # авторизация на watch.is
-    basicHtml = request(siteUrl+'/login', authInfo)
+    if(mode != "years"):
+        basicHtml = request(siteUrl+'/login', authInfo)
 
     if mode == "movie_info":
         progress.update(25)
@@ -384,6 +423,8 @@ try:
         viewSelectedGenre(url, page)
     elif mode == "view_year":
         viewSelectedYear(url, page)
+    elif mode == "view_rating":
+        viewOrderByRating(page)
     elif mode == "movie_info":
         showMovieInfo(url)
     elif mode == "search":
@@ -400,6 +441,10 @@ try:
         viewNewMovies(url)
     elif mode == "years":
         showYearsList()
+    elif mode == 'add_bookmark':
+        add_bookmark(url)
+    elif mode == 'remove_bookmark':
+        remove_bookmark(url)
     del progress
 
 except SystemExit:
@@ -409,4 +454,7 @@ except:
     Notificator('Шеф, все пропало...', 'Произошла критическая ошибка', 3000)
     sys.exit(1)
 
-xbmcplugin.endOfDirectory(int(sys.argv[1]))
+if mode == None or mode == "bookmarks":
+    xbmcplugin.endOfDirectory(int(sys.argv[1]), cacheToDisc=False)
+else:
+    xbmcplugin.endOfDirectory(int(sys.argv[1]))
