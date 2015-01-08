@@ -2,7 +2,7 @@
 <addons>
 	<addon id="plugin.video.watch.is.dev"
        name="Watch.Is"
-       version="0.0.5"
+       version="0.0.6"
        provider-name="Evgenii Devisok aka evgen_dev">
 	<requires>
 		<import addon="xbmc.python" version="2.1.0"/>
@@ -19,7 +19,7 @@
 		<platform>all</platform>
 		<license>GNU GENERAL PUBLIC LICENSE. Version 2, June 1991</license>
 		<forum>http://xbmc.ru/forum/showthread.php?t=4730</forum>
-		<email>xbmc.devisok.org</email>
+		<email>xbmc@devisok.org</email>
 	</extension>
 </addon>
 </addons>

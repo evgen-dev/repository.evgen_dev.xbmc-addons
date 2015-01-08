@@ -21,6 +21,7 @@ sid_file = os.path.join(xbmc.translatePath('special://temp/'), 'plugin_video_wat
 username = __settings__.getSetting('username')
 password = __settings__.getSetting('password')
 detailed_log = __settings__.getSetting('detailed')
+prev_year_new = __settings__.getSetting('prev_year_new')
 
 def print_log(message):
     if(detailed_log):
@@ -127,8 +128,13 @@ def getBookmarkNum():
         return bookmarks[0]
 
 def homePage():
+    if(prev_year_new == 'false'):
+        new_year = str(datetime.date.today().year)
+    else:
+        new_year = str(datetime.date.today().year-1)
+    
     addDir("Поиск", siteUrl, "search")
-    addDir("Новые фильмы", siteUrl+'/?genre=0&year='+str(datetime.date.today().year)+'&sorting=added&order=desc', "newmovie")
+    addDir("Новые фильмы", siteUrl+'/?genre=0&year='+new_year+'&sorting=added&order=desc', "newmovie")
     addDir("Лучшие фильмы", siteUrl+'/top', "topmovie")
     addDir("Фильмы по рейтингу", siteUrl, "view_rating")
     addDir("Фильмы по жанрам", siteUrl, "genres")
@@ -454,6 +460,8 @@ except:
     Notificator('Шеф, все пропало...', 'Произошла критическая ошибка', 3000)
     sys.exit(1)
 
+xbmcplugin.setContent(int(sys.argv[1]), 'movies')
+	
 if mode == None or mode == "bookmarks":
     xbmcplugin.endOfDirectory(int(sys.argv[1]), cacheToDisc=False)
 else:

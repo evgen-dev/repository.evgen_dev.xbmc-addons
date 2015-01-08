@@ -67,7 +67,7 @@ class DialogXml(xbmcgui.WindowXMLDialog):
             self.close()
         if (controlID == 30):
             self.close()
-            self.listitem = xbmcgui.ListItem(self.movieInfo['title'])
+            self.listitem = xbmcgui.ListItem(self.movieInfo['title'], iconImage=self.movieInfo['poster'], thumbnailImage=self.movieInfo['poster'])
             if(self.quilitybutton.isSelected()):
                 xbmc.Player().play(self.movieInfo['direct_url_hq'], self.listitem)
             else:

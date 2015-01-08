@@ -2,6 +2,7 @@
 <settings>
 	<setting id="username" type="text" label="Ваш Login"  default="" />
 	<setting id="password" type="text" label="Ваш Пароль" default="" option="hidden" enable="!eq(-1,)"/>
-	<setting id="default_play_hd" type="bool" label="Качество HD выбрано по умолчанию" default="true"/>
+	<setting id="default_play_hd" type="bool" label="Высокое качество выбрано по умолчанию" default="true"/>
 	<setting id="detailed" type="bool" label="Подробный лог" default="false"/>
+	<setting id="prev_year_new" type="bool" label="Отображать новинки за предыдущий год" default="false"/>
 </settings>
