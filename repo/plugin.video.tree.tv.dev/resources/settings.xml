@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<settings>
+    <setting id="cache_time" type="number" label="30104" default="60" />
+	<setting label="30105" type="action" action="RunScript($CWD/clear_cache.py, '')"/>
+</settings>
