@@ -2,7 +2,7 @@
 #очистка кеша
 
 import os, xbmcup.system
-from defines import *
+from core.defines import *
 
 cache_file = xbmcup.system.fs('sandbox://'+CACHE_DATABASE).replace('clear_cache.py', '')
 if xbmcup.system.FS().exists(cache_file):
