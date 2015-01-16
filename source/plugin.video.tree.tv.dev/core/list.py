@@ -6,7 +6,7 @@ import xbmc, cover, xbmcplugin, xbmcgui
 from common import Render
 from defines import *
 
-CACHE = xbmcup.db.Cache(xbmcup.system.fs('sandbox://treetv.cache.db'))
+CACHE = xbmcup.db.Cache(xbmcup.system.fs('sandbox://'+CACHE_DATABASE))
 
 class Paginator(xbmcup.app.Handler):
     def __init__(self, soup):
@@ -56,7 +56,7 @@ class HttpData:
                 result['data'].append({
                         'url': href.get('href'),
                         'name': href.get_text().strip(),
-                        'img': None if not movieposter else ('http://tree.tv' + movieposter)
+                        'img': None if not movieposter else (SITE_URL + movieposter)
                     })
         except:
             print traceback.format_exc()
@@ -83,7 +83,7 @@ class HttpData:
             try:
                 current_movie['folder_title'] = soup.find('div', {'data-folder': str(window_id)}).find('a').get('title').encode('utf-8')
             except:
-                current_movie['folder_title'] = u'Папка'
+                current_movie['folder_title'] = xbmcup.app.lang[30113]
 
             sort_movies = sorted(movies[window_id].items(), key=lambda (k,v): int(k))
             for movie in sort_movies:
@@ -158,7 +158,7 @@ class MovieList(xbmcup.app.Handler, HttpData, Render):
 
         if(response['page']['pagenum'] > 1):
             params['page'] = page-1
-            self.item('[COLOR green]<< Предыдущая страница[/COLOR]', self.replace('list', params), cover=cover.prev)
+            self.item('[COLOR green]'+xbmcup.app.lang[30106]+'[/COLOR]', self.replace('list', params), cover=cover.prev)
             params['page'] = page+1
 
         if(len(response['data']) > 0):
@@ -168,9 +168,9 @@ class MovieList(xbmcup.app.Handler, HttpData, Render):
 
             params['page'] = page+1
             if(response['page']['maxpage'] < params['page']):
-                self.item('[COLOR green]Следующая страница >>[/COLOR]', self.replace('list', params), cover=cover.next)
+                self.item('[COLOR green]'+xbmcup.app.lang[30107]+'[/COLOR]', self.replace('list', params), cover=cover.next)
         else:
-            self.item(u'[COLOR red][Категория пуста][/COLOR]', self.link('null'), folder=False, cover=cover.info)
+            self.item(u'[COLOR red]['+xbmcup.app.lang[30111]+'][/COLOR]', self.link('null'), folder=False, cover=cover.info)
 
 class SearchList(xbmcup.app.Handler, HttpData, Render):
     def handle(self):
@@ -189,7 +189,7 @@ class SearchList(xbmcup.app.Handler, HttpData, Render):
             usersearch = params['usersearch']
         except:
             keyboard = xbmc.Keyboard()
-            keyboard.setHeading('Поиск')
+            keyboard.setHeading(xbmcup.app.lang[30112])
             keyboard.doModal()
             usersearch = keyboard.getText(0)
 
@@ -202,12 +202,13 @@ class SearchList(xbmcup.app.Handler, HttpData, Render):
         md5.update(page_url+'/page/'+str(page))
         response = CACHE(str(md5.hexdigest()), self.get_movies, page_url, page)
 
-        self.item(u'[COLOR yellow]Новый поиск[/COLOR]', self.link('search'), folder=True, cover=cover.search)
-        self.item('[COLOR blue][Поиск по запросу: '+usersearch+'][/COLOR]', self.link('null'), folder=False, cover=cover.info)
+        self.item(u'[COLOR yellow]'+xbmcup.app.lang[30108]+'[/COLOR]', self.link('search'), folder=True, cover=cover.search)
+        self.item('[COLOR blue]['+xbmcup.app.lang[30109]+': '+usersearch.decode('utf-8')+'][/COLOR]',
+                  self.link('null'), folder=False, cover=cover.info)
 
         if(response['page']['pagenum'] > 1):
             params['page'] = page-1
-            self.item('[COLOR green]<< Предыдущая страница[/COLOR]', self.replace('search', params), cover=cover.prev)
+            self.item('[COLOR green]'+xbmcup.app.lang[30106]+'[/COLOR]', self.replace('search', params), cover=cover.prev)
             params['page'] = page+1
         if(len(response['data']) > 0):
             for movie in response['data']:
@@ -216,9 +217,9 @@ class SearchList(xbmcup.app.Handler, HttpData, Render):
 
             params['page'] = page+1
             if(response['page']['maxpage'] > 1 and response['page']['maxpage'] < params['page']):
-                self.item(u'[COLOR green]Следующая страница >>[/COLOR]', self.replace('search', params), cover=cover.next)
+                self.item(u'[COLOR green]'+xbmcup.app.lang[30107]+'[/COLOR]', self.replace('search', params), cover=cover.next)
         else:
-            self.item(u'[COLOR red][Поиск не дал результатов][/COLOR]', self.link('null'), folder=False, cover=cover.info)
+            self.item(u'[COLOR red]['+xbmcup.app.lang[30110]+'][/COLOR]', self.link('null'), folder=False, cover=cover.info)
 
 
 class QualityList(xbmcup.app.Handler, HttpData, Render):

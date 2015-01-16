@@ -19,14 +19,14 @@ class Generator:
 
     def _generate_addons_file( self ):
         # addon list
-        addons = os.listdir( "./repo/" )
+        addons = os.listdir( "./source/" )
         #print addons
         # final addons text
         addons_xml = u"<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?>\n<addons>\n"
         # loop thru and add each addons addon.xml file
         for addon in addons:
             try:
-                addon = "./repo/"+addon
+                addon = "./source/"+addon
 				# skip any file or .svn folder
                 if ( not os.path.isdir( addon ) or addon == ".svn" ): continue
                 # create path
