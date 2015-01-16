@@ -70,68 +70,76 @@ class HttpData:
         url = "http://tree.tv"+url
         html = self.load(url).encode('utf-8')
         movieInfo = {}
+        movieInfo['no_files'] = None
         soup = xbmcup.parser.html(html)
 
         js_string = re.compile("'source' : \$\.parseJSON\('([^\']+)'\)", re.S).findall(html)[0].decode('string_escape').decode('utf-8')
         movies = json.loads(js_string, 'utf-8')
-
         movieInfo['episodes'] = True
         movieInfo['movies'] = []
         movieInfo['resolutions'] = []
-        for window_id in movies:
-            current_movie = {'folder_title' : '', 'movies': {}}
-            try:
-                current_movie['folder_title'] = soup.find('div', {'data-folder': str(window_id)}).find('a').get('title').encode('utf-8')
-            except:
-                current_movie['folder_title'] = xbmcup.app.lang[30113]
-
-            sort_movies = sorted(movies[window_id].items(), key=lambda (k,v): int(k))
-            for movie in sort_movies:
+        if(movies != None and len(movies) > 0):
+            for window_id in movies:
+                current_movie = {'folder_title' : '', 'movies': {}}
                 try:
-                    current_movie['movies'][movie[0]].append(movie[1])
+                    current_movie['folder_title'] = soup.find('div', {'data-folder': str(window_id)}).find('a').get('title').encode('utf-8')
                 except:
-                    current_movie['movies'][movie[0]] = []
-                    current_movie['movies'][movie[0]].append(movie[1])
+                    current_movie['folder_title'] = xbmcup.app.lang[30113]
 
-            for resulut in current_movie['movies']:
-                current_movie['movies'][resulut] = current_movie['movies'][resulut][0]
-                # if(len(current_movie['movies'][resulut]) > 1):
-                #     movieInfo['episodes'] = True
+                sort_movies = sorted(movies[window_id].items(), key=lambda (k,v): int(k))
+                for movie in sort_movies:
+                    try:
+                        current_movie['movies'][movie[0]].append(movie[1])
+                    except:
+                        current_movie['movies'][movie[0]] = []
+                        current_movie['movies'][movie[0]].append(movie[1])
 
-            movieInfo['movies'].append(current_movie)
+                for resulut in current_movie['movies']:
+                    current_movie['movies'][resulut] = current_movie['movies'][resulut][0]
+                    # if(len(current_movie['movies'][resulut]) > 1):
+                    #     movieInfo['episodes'] = True
 
-        movieInfo['title'] = soup.find('h1', id='film_object_name').get_text()
-        try:
-            movieInfo['description'] = soup.find('div', class_='description').get_text().strip()
-        except:
-            movieInfo['description'] = ''
+                movieInfo['movies'].append(current_movie)
 
-        try:
-            movieInfo['fanart'] = SITE_URL+soup.find('div', class_='screen_bg').find('a').get('href')
-        except:
-            movieInfo['fanart'] = ''
-        try:
-            movieInfo['cover'] = SITE_URL+soup.find('img', id='preview_img').get('src')
-        except:
-            movieInfo['cover'] = ''
-        try:
-            movieInfo['genres'] = []
-            genres = soup.find('div', class_='list_janr').findAll('a')
-            for genre in genres:
-               movieInfo['genres'].append(genre.get_text().strip())
-            movieInfo['genres'] = ' / '.join(movieInfo['genres']).encode('utf-8')
-        except:
-            movieInfo['genres'] = ''
+            movieInfo['title'] = soup.find('h1', id='film_object_name').get_text()
+            try:
+                movieInfo['description'] = soup.find('div', class_='description').get_text().strip()
+            except:
+                movieInfo['description'] = ''
 
-        try:
-            results = soup.findAll('a', class_='fast_search')
-            movieInfo['year'] = self.get_year(results)
-        except:
-            movieInfo['year'] = ''
-        try:
-            movieInfo['director'] = soup.find('span', class_='regiser_item').get_text().encode('utf-8')
-        except:
-            movieInfo['director'] = ''
+            try:
+                movieInfo['fanart'] = SITE_URL+soup.find('div', class_='screen_bg').find('a').get('href')
+            except:
+                movieInfo['fanart'] = ''
+            try:
+                movieInfo['cover'] = SITE_URL+soup.find('img', id='preview_img').get('src')
+            except:
+                movieInfo['cover'] = ''
+            try:
+                movieInfo['genres'] = []
+                genres = soup.find('div', class_='list_janr').findAll('a')
+                for genre in genres:
+                   movieInfo['genres'].append(genre.get_text().strip())
+                movieInfo['genres'] = ' / '.join(movieInfo['genres']).encode('utf-8')
+            except:
+                movieInfo['genres'] = ''
+
+            try:
+                results = soup.findAll('a', class_='fast_search')
+                movieInfo['year'] = self.get_year(results)
+            except:
+                movieInfo['year'] = ''
+            try:
+                movieInfo['director'] = soup.find('span', class_='regiser_item').get_text().encode('utf-8')
+            except:
+                movieInfo['director'] = ''
+        else:
+            try:
+                no_files = soup.find('div', class_='no_files').get_text().strip().encode('utf-8')
+            except:
+                no_files = ''
+
+            movieInfo['no_files'] = no_files
 
         return movieInfo
 
@@ -255,7 +263,7 @@ class QualityList(xbmcup.app.Handler, HttpData, Render):
             self.def_dir=  self.params['sub_dir']
 
         #если на сайте несколько папок с файлами
-        if(len(self.movieInfo['movies']) > 1 and self.params['sub_dir'] == None):
+        if((len(self.movieInfo['movies']) > 1 and self.params['sub_dir'] == None) or self.movieInfo['no_files'] != None):
             self.show_folders()
 
         #если эпизоды есть в разном качествве
@@ -270,19 +278,23 @@ class QualityList(xbmcup.app.Handler, HttpData, Render):
 
 
     def show_folders(self):
-        i = 0
-        for movie in self.movieInfo['movies']:
-            self.item(movie['folder_title'],
-                       self.link('quality-list',
-                                {
-                                    'sub_dir' : i,
-                                    'movieInfo' : self.movieInfo
-                                }
-                       ),
-                       folder=True,
-                       cover = self.movieInfo['cover']
-            )
-            i = i+1
+        print self.movieInfo['no_files']
+        if(self.movieInfo['no_files'] == None):
+            i = 0
+            for movie in self.movieInfo['movies']:
+                self.item(movie['folder_title'],
+                           self.link('quality-list',
+                                    {
+                                        'sub_dir' : i,
+                                        'movieInfo' : self.movieInfo
+                                    }
+                           ),
+                           folder=True,
+                           cover = self.movieInfo['cover']
+                )
+                i = i+1
+        else:
+            self.item(u'[COLOR red]['+self.movieInfo['no_files'].decode('utf-8')+'][/COLOR]', self.link('null'), folder=False, cover=cover.info)
 
 
     def show_episodes(self):
