@@ -279,14 +279,21 @@ def pretty_desc(desc):
 def showMovieInfo(url):
     global progress
     progress.update(50)
-    movieHtml =  request(siteUrl+url, {})
+    disable_info = __settings__.getSetting('disable_info')
+    video_id = url.split('/')[1]
+    #не знал раньше о том, что есть api watch.is =(
+    movieXml = request('http://watch.is/api/watch/'+video_id, {})
     movieInfo = {}
-    movieInfo['movieHtml'] = movieHtml
-    progress.update(75)
-    direct_url = re.compile('file:"([^"]+)"',re.S).findall(movieHtml)
 
+    if(disable_info == 'false'):
+        movieHtml =  request(siteUrl+url, {})
+        movieInfo['movieHtml'] = movieHtml
+
+    progress.update(75)
+
+    direct_url = re.compile('<video>([^<]+)</video>',re.S).findall(movieXml)
     if(len(direct_url) > 0):
-        movieInfo['direct_url'] = direct_url[0];
+        movieInfo['direct_url'] = direct_url[0]
     else:
         progress.close()
         Alert('Капец...', 'Не удалось найти прямую ссылку на фильм')
@@ -294,10 +301,28 @@ def showMovieInfo(url):
         return False
 
     movieInfo['direct_url_hq'] = False
-    hd_quility = re.compile('var flashvars ={"file":"([^\]]+:\[[^\]]+)\]', re.S).findall(movieHtml)
+    hd_quility = re.compile('<hdvideo>([^<]+)</hdvideo>',re.S).findall(movieXml)
     if(len(hd_quility) > 0):
-        contentServer = direct_url[0].split('/watch/')
-        movieInfo['direct_url_hq'] = contentServer[0]+'/watch/'+hd_quility[0].split(',')[1]+'?'+direct_url[0].split('?')[1]
+        movieInfo['direct_url_hq'] = hd_quility[0]
+
+    poster = re.compile('<poster>([^<]+)</poster>',re.S).findall(movieXml)
+    if(len(poster) > 0):
+        movieInfo['poster'] = poster[0]
+    del poster
+
+    movietitle = re.compile('<title>([^<]+)</title>',re.S).findall(movieXml)
+    if(len(movietitle) > 0):
+        movieInfo['title'] = movietitle[0];
+    del movietitle
+
+    if(disable_info == 'true'):
+        listitem = xbmcgui.ListItem(movieInfo['title'], iconImage=movieInfo['poster'], thumbnailImage=movieInfo['poster'])
+        if(__settings__.getSetting('default_play_hd') == 'true' and movieInfo['direct_url_hq'] != False):
+            xbmc.Player().play(movieInfo['direct_url_hq'], listitem)
+        else:
+            xbmc.Player().play(movieInfo['direct_url'], listitem)
+        progress.close()
+        return False
 
     desc_info = re.compile('<div class="opt" id="video-descr">(.*?)</div>',re.S).findall(movieHtml)
     if(len(desc_info) > 0):
@@ -306,11 +331,6 @@ def showMovieInfo(url):
         del desc_info
 
     progress.update(85)
-
-    poster = re.compile('<img src="/posters/([^"]+)" class="image-border" alt="" />',re.S).findall(movieHtml)
-    if(len(poster) > 0):
-        movieInfo['poster'] = siteUrl+'/posters/'+poster[0];
-    del poster
 
     rating = re.compile('<div class="rating-count"><strong id="[^"]*">([^<]+)</strong></div>',re.S).findall(movieHtml)
     if(len(rating) > 0):
@@ -326,11 +346,6 @@ def showMovieInfo(url):
     if(len(kinopoisk) > 0):
         movieInfo['kinopoisk'] = kinopoisk[0];
     del kinopoisk
-
-    movietitle = re.compile('<h3 class="content-pad">([^<]+)</h3>',re.S).findall(movieHtml)
-    if(len(movietitle) > 0):
-        movieInfo['title'] = movietitle[0];
-    del movietitle
 
     progress.update(100)
     progress.close()
