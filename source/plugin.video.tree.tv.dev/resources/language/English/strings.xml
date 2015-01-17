@@ -1,0 +1,18 @@
+<strings>
+    <string id="30104">Время жизни кэша в минутах (0 - откл. кеширование)</string>
+    <string id="30105">Очистить кеш</string>
+    <string id="30106">&lt;&lt; Предыдущая страница</string>
+    <string id="30107">Следующая страница &gt;&gt;</string>
+    <string id="30108">Новый поиск</string>
+    <string id="30109">Поиск по запросу</string>
+    <string id="30110">Поиск не дал результатов</string>
+    <string id="30111">Категория пуста</string>
+    <string id="30112">Поиск</string>
+    <string id="30113">Папка</string>
+    
+	<string id="30114">Фильмы</string>
+    <string id="30115">Сериалы</string>
+    <string id="30116">Мультфильмы</string>
+    <string id="30117">ТВ-передачи</string>
+    <string id="30118">Аниме</string>
+</strings>

@@ -78,6 +78,7 @@ class HttpData:
         movieInfo['episodes'] = True
         movieInfo['movies'] = []
         movieInfo['resolutions'] = []
+        print movies
         if(movies != None and len(movies) > 0):
             for window_id in movies:
                 current_movie = {'folder_title' : '', 'movies': {}}
