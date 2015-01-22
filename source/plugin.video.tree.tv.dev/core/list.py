@@ -38,7 +38,7 @@ class HttpData:
         if not html:
             return None, {'page': {'pagenum' : 0, 'maxpage' : 0}, 'data': []}
         result = {'page': {}, 'data': []}
-        soup = xbmcup.parser.html(html)
+        soup = xbmcup.parser.html(self.strip_scripts(html))
         result['page'] = Paginator(soup).get_page()
         #print html.encode('utf-8')
         center_menu = soup.find('div', class_='main_content_item')
@@ -71,7 +71,7 @@ class HttpData:
         html = self.load(url).encode('utf-8')
         movieInfo = {}
         movieInfo['no_files'] = None
-        soup = xbmcup.parser.html(html)
+        soup = xbmcup.parser.html(self.strip_scripts(html))
 
         js_string = re.compile("'source' : \$\.parseJSON\('([^\']+)'\)", re.S).findall(html)[0].decode('string_escape').decode('utf-8')
         movies = json.loads(js_string, 'utf-8')
@@ -149,6 +149,11 @@ class HttpData:
             if(res.get('rel')[0] == 'year1'):
                 return res.get_text().encode('utf-8')
         return 0
+
+    def strip_scripts(self, html):
+        #удаляет все теги <script></script> и их содержимое
+        #сделал для того, что бы parser не ломал голову на тегах в js
+        return re.compile(r'<script[^>]*>(.*?)</script>', re.S).sub('', html)
 
 class MovieList(xbmcup.app.Handler, HttpData, Render):
     def handle(self):
