@@ -1,5 +1,5 @@
 <strings>
-    <string id="30104">Время жизни кэша в минутах (0 - откл. кеширование)</string>
+    <string id="30104">Время жизни кеша в минутах (0 - откл. кеширование)</string>
     <string id="30105">Очистить кеш</string>
     <string id="30106">&lt;&lt; Предыдущая страница</string>
     <string id="30107">Следующая страница &gt;&gt;</string>
@@ -15,4 +15,37 @@
     <string id="30116">Мультфильмы</string>
     <string id="30117">ТВ-передачи</string>
     <string id="30118">Аниме</string>
+    <string id="30119">Подборки</string>
+    <string id="30120">Подбор по параметрам</string>
+    <string id="30121">Очередь просмотра</string>
+    
+	<string id="30122">Настройки сортировки</string>
+	<string id="30123">Настройки кеширования</string>
+	
+	<string id="30124">по просмотрам</string>
+	<string id="30125">по рейтингу</string>
+	<string id="30126">по дате добавления</string>
+	<string id="30127">Сортировать</string>
+	
+	<string id="30128">Рубрика: [COLOR blue]%s[/COLOR]</string>
+	<string id="30129">Жанр: [COLOR blue]%s[/COLOR]</string>
+	<string id="30130">Качество: [COLOR blue]%s[/COLOR]</string>
+	<string id="30131">Награда: [COLOR blue]%s[/COLOR]</string>
+	<string id="30132">Производство: [COLOR blue]%s[/COLOR]</string>
+	<string id="30133">[COLOR green][Применить выбранные фильтры][/COLOR]</string>
+	<string id="30134">[COLOR yellow]Результаты поиска [COLOR blue][Страница %s из %s][/COLOR]:[/COLOR]</string>
+	
+
+	<string id="30135">Любой</string>
+	<string id="30136">Не важно</string>
+	
+	<string id="30137">Рубрика</string>
+	<string id="30138">Жанр</string>
+	<string id="30139">Качество</string>
+	<string id="30140">Награда</string>
+	<string id="30141">Производство</string>
+	
+	<string id="30142">Наше</string>
+	<string id="30143">Зарубежное</string>
+	
 </strings>

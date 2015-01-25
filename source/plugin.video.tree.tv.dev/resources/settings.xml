@@ -1,5 +1,10 @@
 <?xml version="1.0" encoding="utf-8" standalone="yes"?>
 <settings>
-    <setting id="cache_time" type="number" label="30104" default="10" />
-	<setting label="30105" type="action" action="RunScript($CWD/clear_cache.py, '')"/>
+		<setting label="30122" type="lsep"/>
+		<setting label="30127" type="enum" id="sort_by" default="2" lvalues="30124|30125|30126"/>
+		
+		<setting label="30123" type="lsep"/>
+		<setting id="cache_time" type="number" label="30104" default="10" />
+		<setting label="30105" type="action" action="RunScript($CWD/clear_cache.py)"/>
+	
 </settings>

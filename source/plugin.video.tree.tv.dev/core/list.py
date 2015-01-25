@@ -8,6 +8,11 @@ from defines import *
 
 CACHE = xbmcup.db.Cache(xbmcup.system.fs('sandbox://'+CACHE_DATABASE))
 
+try:
+    cache_minutes = 60*int(xbmcup.app.setting['cache_time'])
+except:
+    cache_minutes = 0
+
 class Paginator(xbmcup.app.Handler):
     def __init__(self, soup):
        self.soup = soup
@@ -15,11 +20,17 @@ class Paginator(xbmcup.app.Handler):
     def get_page(self):
         info = {'pagenum' : 0, 'maxpage' : 0}
         try:
-            wrap  = self.soup.find('div', id='main_paginator')
+            wrap  = self.soup.find('div', class_='paginationControl')
             info['pagenum'] = int(wrap.find('b').get_text().encode('utf-8'))
-            info['maxpage'] = int(wrap.find('a', class_='last').get('rel').encode('utf-8'))
+            try:
+                info['maxpage'] = int(wrap.find('a', class_='last').get('rel')[0])
+            except:
+                info['maxpage'] = int(os.path.basename(wrap.find('a', class_='next').get('href')))
         except:
-            pass
+            info['pagenum'] = 1
+            info['maxpage'] = 1
+            print traceback.format_exc()
+        print info
         return info
 
 class HttpData:
@@ -40,11 +51,32 @@ class HttpData:
         result = {'page': {}, 'data': []}
         soup = xbmcup.parser.html(self.strip_scripts(html))
         result['page'] = Paginator(soup).get_page()
-        #print html.encode('utf-8')
         center_menu = soup.find('div', class_='main_content_item')
         try:
             for div in center_menu.find_all('div', class_='item'):
                 href = div.find('h2').find('a')
+                try:
+                    quality = div.find('span', class_='quality_film_title').get_text().strip()
+                except:
+                    quality = ''
+
+                dop_information = []
+                try:
+                    year = div.find('div', class_='smoll_year').get_text().strip()
+                    dop_information.append(year)
+                except:
+                    pass
+
+                try:
+                    genre = div.find('div', class_='smoll_janr').get_text().strip()
+                    dop_information.append(genre)
+                except:
+                    pass
+
+                information = ''
+                if(len(dop_information) > 0):
+                    information = '[COLOR white]['+', '.join(dop_information)+'][/COLOR]'
+
                 posters = div.find('div', class_='preview').find_all('img')
                 movieposter = None
                 for img in posters:
@@ -55,19 +87,19 @@ class HttpData:
 
                 result['data'].append({
                         'url': href.get('href'),
+                        'quality': self.format_quality(quality),
+                        'year': information,
                         'name': href.get_text().strip(),
                         'img': None if not movieposter else (SITE_URL + movieposter)
                     })
         except:
             print traceback.format_exc()
 
-        cache_minutes = int(xbmcup.app.setting._get('cache_time'))
-
-        return 60*cache_minutes, result
+        return cache_minutes, result
 
 
     def get_movie_info(self, url):
-        url = "http://tree.tv"+url
+        url = SITE_URL+"/"+url
         html = self.load(url).encode('utf-8')
         movieInfo = {}
         movieInfo['no_files'] = None
@@ -144,6 +176,45 @@ class HttpData:
 
         return movieInfo
 
+    def get_collections(self):
+        url = SITE_URL+"/collection"
+        html = self.load(url).encode('utf-8')
+        if not html:
+            return None, {'page': {'pagenum' : 0, 'maxpage' : 0}, 'data': []}
+        result = {'page': {}, 'data': []}
+        soup = xbmcup.parser.html(self.strip_scripts(html))
+        wrap = soup.find('div', class_='main_content_item')
+        try:
+            for div in wrap.find_all('div', class_='item'):
+                try:
+                    preview_img = div.find('div', class_='preview').find('img').get('src')
+                except:
+                    preview_img = ''
+
+                try:
+                    movie_count = div.find('div', class_='item_content').find('span').get_text().strip()
+                except:
+                    movie_count = ''
+
+                try:
+                    href = div.find('div', class_='item_content').find('a')
+                    name = href.get_text().strip()+(' (%s)' % movie_count if movie_count != '' else '')
+                    href = href.get('href')
+                except:
+                    name = ''
+                    href = ''
+
+                result['data'].append({
+                        'url': href,
+                        'name': name,
+                        'img': None if not preview_img else (SITE_URL + preview_img)
+                    })
+
+        except:
+            print traceback.format_exc()
+
+        return cache_minutes, result
+
     def get_year(self, results):
         for res in results:
             if(res.get('rel')[0] == 'year1'):
@@ -155,6 +226,51 @@ class HttpData:
         #сделал для того, что бы parser не ломал голову на тегах в js
         return re.compile(r'<script[^>]*>(.*?)</script>', re.S).sub('', html)
 
+    def format_quality(self, quality):
+        qualitys = {'HD' : 'ff3BADEE', 'HQ' : 'ff59C641', 'SQ' : 'ffFFB119', 'LQ' : 'ffDE4B64'}
+        if(quality in qualitys):
+            return "[COLOR %s][%s][/COLOR]" % (qualitys[quality], quality)
+        return ("[COLOR ffDE4B64][%s][/COLOR]" % quality if quality != '' else '')
+
+class CollectionList(xbmcup.app.Handler, HttpData, Render):
+    def handle(self):
+        params = self.argv[0]
+        try:
+            url = params['url']
+        except:
+            url = ''
+
+        if(url == ''):
+           self.show_dirs()
+        else:
+            self.show_movies(url)
+
+    def show_dirs(self):
+        md5 = hashlib.md5()
+        md5.update('/collection')
+        response = CACHE(str(md5.hexdigest()), self.get_collections)
+
+        if(len(response['data']) > 0):
+            for movie in response['data']:
+                self.item(movie['name'],
+                        self.link('collection', {'url' : movie['url']}),
+                        folder=True, cover=movie['img'])
+        else:
+            self.item(u'[COLOR red]['+xbmcup.app.lang[30111]+'][/COLOR]', self.link('null'), folder=False, cover=cover.info)
+
+    def show_movies(self, url):
+        md5 = hashlib.md5()
+        md5.update(url)
+        response = CACHE(str(md5.hexdigest()), self.get_movies, url, 0)
+        if(len(response['data']) > 0):
+            for movie in response['data']:
+                self.item(movie['name']+' '+movie['year']+' '+movie['quality'],
+                          self.link('quality-list', {'movie_page' : movie['url'], 'cover' : movie['img']}),
+                          folder=True, cover=movie['img'])
+        else:
+            self.item(u'[COLOR red]['+xbmcup.app.lang[30111]+'][/COLOR]', self.link('null'), folder=False, cover=cover.info)
+
+
 class MovieList(xbmcup.app.Handler, HttpData, Render):
     def handle(self):
         params = self.argv[0]
@@ -163,13 +279,18 @@ class MovieList(xbmcup.app.Handler, HttpData, Render):
         except:
             params['page'] = 0
             page = 0
-        page_url = "/"+params['dir']+"/sortType/new"
+
+        try:
+            sort_by = SORT_TYPES[int(xbmcup.app.setting['sort_by'])]
+        except:
+            sort_by = 'new'
+
+        page_url = "/"+params['dir']+"/sortType/%s" % sort_by
 
         md5 = hashlib.md5()
         md5.update(page_url+'/page/'+str(page))
 
         response = CACHE(str(md5.hexdigest()), self.get_movies, page_url, page)
-
         if(response['page']['pagenum'] > 1):
             params['page'] = page-1
             self.item('[COLOR green]'+xbmcup.app.lang[30106]+'[/COLOR]', self.replace('list', params), cover=cover.prev)
@@ -177,11 +298,12 @@ class MovieList(xbmcup.app.Handler, HttpData, Render):
 
         if(len(response['data']) > 0):
             for movie in response['data']:
-                self.item(movie['name'], self.link('quality-list', {'movie_page' : movie['url'], 'cover' : movie['img']}),
+                self.item(movie['name']+' '+movie['year']+' '+movie['quality'],
+                          self.link('quality-list', {'movie_page' : movie['url'], 'cover' : movie['img']}),
                           folder=True, cover=movie['img'])
 
             params['page'] = page+1
-            if(response['page']['maxpage'] < params['page']):
+            if(response['page']['maxpage'] >= response['page']['pagenum']+1):
                 self.item('[COLOR green]'+xbmcup.app.lang[30107]+'[/COLOR]', self.replace('list', params), cover=cover.next)
         else:
             self.item(u'[COLOR red]['+xbmcup.app.lang[30111]+'][/COLOR]', self.link('null'), folder=False, cover=cover.info)
@@ -201,23 +323,26 @@ class SearchList(xbmcup.app.Handler, HttpData, Render):
 
         try:
             usersearch = params['usersearch']
+            vsearch = params['vsearch']
         except:
             keyboard = xbmc.Keyboard()
             keyboard.setHeading(xbmcup.app.lang[30112])
             keyboard.doModal()
             usersearch = keyboard.getText(0)
+            vsearch = usersearch.decode('utf-8')
+            params['vsearch'] = vsearch
+            params['usersearch'] = urllib.quote_plus(usersearch)
 
         if not usersearch: return False
 
-        page_url = "search/index/index/usersearch/"+urllib.quote_plus(usersearch)
-        #response = self.get_movies(page_url, page)
+        page_url = "search/index/index/usersearch/"+params['usersearch']
 
         md5 = hashlib.md5()
         md5.update(page_url+'/page/'+str(page))
         response = CACHE(str(md5.hexdigest()), self.get_movies, page_url, page)
 
         self.item(u'[COLOR yellow]'+xbmcup.app.lang[30108]+'[/COLOR]', self.link('search'), folder=True, cover=cover.search)
-        self.item('[COLOR blue]['+xbmcup.app.lang[30109]+': '+usersearch.decode('utf-8')+'][/COLOR]',
+        self.item('[COLOR blue]['+xbmcup.app.lang[30109]+': '+vsearch+'][/COLOR]',
                   self.link('null'), folder=False, cover=cover.info)
 
         if(response['page']['pagenum'] > 1):
@@ -226,11 +351,12 @@ class SearchList(xbmcup.app.Handler, HttpData, Render):
             params['page'] = page+1
         if(len(response['data']) > 0):
             for movie in response['data']:
-                self.item(movie['name'], self.link('quality-list', {'movie_page' : movie['url'], 'cover' : movie['img']}),
-                      folder=True, cover=movie['img'])
+                self.item(movie['name']+' '+movie['year']+' '+movie['quality'],
+                          self.link('quality-list', {'movie_page' : movie['url'], 'cover' : movie['img']}),
+                          folder=True, cover=movie['img'])
 
             params['page'] = page+1
-            if(response['page']['maxpage'] > 1 and response['page']['maxpage'] < params['page']):
+            if(response['page']['maxpage'] >= response['page']['pagenum']+1):
                 self.item(u'[COLOR green]'+xbmcup.app.lang[30107]+'[/COLOR]', self.replace('search', params), cover=cover.next)
         else:
             self.item(u'[COLOR red]['+xbmcup.app.lang[30110]+'][/COLOR]', self.link('null'), folder=False, cover=cover.info)
@@ -243,7 +369,6 @@ class QualityList(xbmcup.app.Handler, HttpData, Render):
             return cover.res_icon[quality]
         else:
             return cover.res_icon['default']
-
 
     def handle(self):
         self.params = self.argv[0]
@@ -322,6 +447,7 @@ class QualityList(xbmcup.app.Handler, HttpData, Render):
             for movie in movies:
                 self.add_playable_item(movie)
 
+        #xbmcplayer.player.onPlayBackEnded()
         self.render_items()
 
     def show_quality_folder(self):
@@ -358,6 +484,9 @@ class QualityList(xbmcup.app.Handler, HttpData, Render):
                 #'duration' : '90',
                 #'votes' :   '10000',
                 'plot' :    self.movieInfo['description']
+                # 'playcount' : 1,
+                # 'date': '%d.%m.%Y',
+                # 'count' : 12
             }
 
 
