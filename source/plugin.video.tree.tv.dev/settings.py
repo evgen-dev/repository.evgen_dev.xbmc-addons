@@ -2,10 +2,10 @@
 #очистка кеша
 
 import sys, xbmc, xbmcaddon
-sys.argv[0] = sys.argv[0].replace('/settings.py', '')
-print sys.argv[0]
-import os, xbmcup.app, xbmcup.system, xbmcup.db
 from core.defines import *
+sys.argv[0] = PLUGIN_ID
+import os, xbmcup.app, xbmcup.system, xbmcup.db
+
 from core.auth import Auth
 import core.cover
 
