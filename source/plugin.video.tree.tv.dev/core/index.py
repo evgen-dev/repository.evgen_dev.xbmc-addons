@@ -12,4 +12,4 @@ class Index(xbmcup.app.Handler):
         self.item(xbmcup.app.lang[30117], self.link('list', {'dir' : 'onlinetv'}),    folder=True, cover=cover.treetv)
         self.item(xbmcup.app.lang[30118], self.link('list', {'dir' : 'anime'}),       folder=True, cover=cover.treetv)
         self.item(xbmcup.app.lang[30119], self.link('collection', {'url' : ''}),      folder=True, cover=cover.treetv)
-        #self.item(xbmcup.app.lang[30121], self.link('queue'),                         folder=True, cover=cover.treetv)
+        self.item(xbmcup.app.lang[30146], self.link('bookmarks',  {'url' : ''}),       folder=True, cover=cover.treetv)

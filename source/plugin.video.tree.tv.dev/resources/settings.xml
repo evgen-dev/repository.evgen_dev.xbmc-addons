@@ -1,10 +1,24 @@
 <?xml version="1.0" encoding="utf-8" standalone="yes"?>
 <settings>
-		<setting label="30122" type="lsep"/>
-		<setting label="30127" type="enum" id="sort_by" default="2" lvalues="30124|30125|30126"/>
+	<category label="31002" id="autorize">
+		<setting label="31011" type="text" id="username" enable="!eq(2,true)" default=""/>
+        <setting label="31012" type="text" id="password" option="hidden" enable="!eq(-1,)+!eq(1,true)" default=""/>
+        <setting id="is_logged" type="bool" visible="false" label="Is logged" default="false" />
+        <setting label="31013" type="action" option="close" visible="!eq(-1,true)+!eq(-2,)" enabled="false" action="RunScript($CWD/settings.py, login)"/>
+        <setting label="31014" type="action" option="close" visible="!eq(-2,false)" action="RunScript($CWD/settings.py, logout)"/>
+	</category>
+
+	<category label="31001">
+		<setting label="31003" type="lsep"/>
+		<setting label="31008" type="enum" id="sort_by" default="2" lvalues="31005|31006|31007"/>
 		
-		<setting label="30123" type="lsep"/>
-		<setting id="cache_time" type="number" label="30104" default="10" />
-		<setting label="30105" type="action" action="RunScript($CWD/clear_cache.py)"/>
-	
+		<setting label="31004" type="lsep"/>
+		<setting id="cache_time" type="number" label="31009" default="10" />
+		<setting label="31010" type="action" action="RunScript($CWD/settings.py, clear_cache)"/>
+		<setting id="bookmark_dir" type="bool" visible="false" label="" default="0" />
+		
+		<setting label="31015" type="lsep"/>
+		<setting label="31016" type="enum" id="quality" default="0" lvalues="34017|34018|34019|34020|34021"/>
+		
+	</category>
 </settings>
