@@ -44,7 +44,7 @@ class HttpData:
         else:
             return response.text if response.status_code == 200 else None
 
-    def get_movies(self, url, page, classname='main_content_item'):
+    def get_movies(self, url, page, classname='main_content_item', nocache=False):
         page = int(page)
         if(page > 0):
             url = SITE_URL+"/"+url.strip('/')+"/page/"+str(page+1)
@@ -105,8 +105,11 @@ class HttpData:
                     })
         except:
             print traceback.format_exc()
-
-        return cache_minutes, result
+        print nocache
+        if(nocache):
+            return None, result
+        else:
+            return cache_minutes, result
 
 
     def get_movie_info(self, url):

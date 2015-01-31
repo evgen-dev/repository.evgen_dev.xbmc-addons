@@ -4,6 +4,7 @@ import os, re, sys, json, urllib, hashlib, traceback
 import xbmcup.app, xbmcup.db, xbmcup.system, xbmcup.net, xbmcup.parser, xbmcup.gui
 import xbmc, cover, xbmcplugin, xbmcgui
 from http import HttpData
+from auth import Auth
 from common import Render
 from defines import *
 
@@ -142,6 +143,8 @@ class SearchList(AbstactList):
 class BookmarkList(AbstactList):
 
     def handle(self):
+        Auth().autorize()
+
         try:
             params = self.argv[0]
         except:
@@ -156,11 +159,15 @@ class BookmarkList(AbstactList):
 
         if(url == ''):
             if(xbmcup.app.setting['is_logged'] == 'false'):
-                xbmcup.gui.message(xbmcup.app.lang[30149])
+                xbmcup.gui.message(xbmcup.app.lang[30149].encode('utf-8'))
                 return False
             self.show_dirs()
+            self._variables['is_item'] = False
+            self.render(cache=False)
         else:
             self.show_movies(url)
+            self._variables['is_item'] = False
+            self.render(cache=False)
 
     def show_dirs(self):
         md5 = hashlib.md5()
@@ -179,9 +186,10 @@ class BookmarkList(AbstactList):
         url = 'users/profile/bookmark?bookmark=%s&_=1422563130401' % (url[0])
         md5 = hashlib.md5()
         md5.update(url)
-        response = CACHE(str(md5.hexdigest()), self.get_movies, url, 0, 'book_mark_content')
+        response = CACHE(str(md5.hexdigest()), self.get_movies, url, 0, 'book_mark_content', True)
         print response
         self.add_movies(response, 30152)
+
 
 
 class QualityList(xbmcup.app.Handler, HttpData, Render):

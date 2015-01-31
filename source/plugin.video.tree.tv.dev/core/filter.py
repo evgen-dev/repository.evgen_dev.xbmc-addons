@@ -198,4 +198,4 @@ class Filter(FilterData, AbstactList):
         years_list = map(str, list(reversed(range(1900, int(now_time.year)+1))))
         years_list.insert(0, xbmcup.app.lang[30135])
         ret = xbmcup.gui.select(xbmcup.app.lang[30140], years_list)
-        return False if ret < 0 else [years_list[ret], "sortYear/%s" % str(years_list[ret]) if ret > 0 else '', ret]
+        return False if ret < 0 else [years_list[ret], "year/%s" % str(years_list[ret]) if ret > 0 else '', ret]

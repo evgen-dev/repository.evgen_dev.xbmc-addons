@@ -47,10 +47,11 @@ class Auth:
         return {}
 
 
-    def reset_auth(self):
+    def reset_auth(self, reset_settings=False):
         xbmcup.app.setting['is_logged'] = 'false'
-        # xbmcup.app.setting['username'] = ''
-        # xbmcup.app.setting['password'] = ''
+        if reset_settings == True:
+            xbmcup.app.setting['username'] = ''
+            xbmcup.app.setting['password'] = ''
         xbmcup.system.fs.delete('sandbox://'+COOKIE_FILE)
 
 
