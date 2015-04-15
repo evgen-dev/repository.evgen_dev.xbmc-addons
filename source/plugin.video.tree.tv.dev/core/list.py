@@ -8,7 +8,13 @@ from auth import Auth
 from common import Render
 from defines import *
 
+try:
+    from sqlite3 import dbapi2 as sqlite
+except:
+    from pysqlite2 import dbapi2 as sqlite
+
 CACHE = xbmcup.db.Cache(xbmcup.system.fs('sandbox://'+CACHE_DATABASE))
+SQL = xbmcup.db.SQL(xbmcup.system.fs('sandbox://'+CACHE_DATABASE))
 
 class AbstactList(xbmcup.app.Handler, HttpData, Render):
     def add_movies(self, response, ifempty=30111):
@@ -16,7 +22,8 @@ class AbstactList(xbmcup.app.Handler, HttpData, Render):
             for movie in response['data']:
                 menu = []
                 if(self.__class__.__name__ != 'BookmarkList'):
-                    menu.append([xbmcup.app.lang[30147], self.link('context', {'action': 'add_bookmark', 'id' : movie['id']})])
+                    #menu.append([xbmcup.app.lang[30147], self.link('context', {'action': 'add_bookmark', 'id' : movie['id']})])
+                    menu.append([xbmcup.app.lang[30147], self.link('context', {'action': 'add_bookmark_in', 'id' : movie['id']})])
                 else:
                     menu.append([xbmcup.app.lang[30148], self.link('context', {'action': 'del_bookmark', 'id' : movie['id']})])
 
@@ -108,15 +115,58 @@ class SearchList(AbstactList):
             usersearch = params['usersearch']
             vsearch = params['vsearch']
         except:
-            keyboard = xbmc.Keyboard()
-            keyboard.setHeading(xbmcup.app.lang[30112])
-            keyboard.doModal()
-            usersearch = keyboard.getText(0)
-            vsearch = usersearch.decode('utf-8')
-            params['vsearch'] = vsearch
-            params['usersearch'] = urllib.quote_plus(usersearch)
+            try:
+                req_count = int(xbmcup.app.setting['search_history'])
+            except:
+                req_count = 0
+            history = []
 
-        if not usersearch: return False
+            if(req_count > 0):
+                SQL.set('create table if not exists search(id INTEGER PRIMARY KEY AUTOINCREMENT, value varchar(255) unique)')
+                history = SQL.get('SELECT id,value FROM search ORDER BY ID DESC')
+            else:
+                SQL.set('DELETE FROM search')
+
+            if(len(history)):
+                history = list(history)
+                values = ['[COLOR yellow]'+xbmcup.app.lang[30108]+'[/COLOR]']
+                for item in history:
+                   values.append(item[1])
+                ret = xbmcup.gui.select(xbmcup.app.lang[30161], values)
+
+                if ret == None:
+                    return
+
+                if(ret > 0):
+                    usersearch = values[ret]
+                    vsearch = usersearch.encode('utf-8').decode('utf-8')
+                    params['vsearch'] = vsearch
+                    params['usersearch'] = urllib.quote_plus(usersearch.encode('utf-8'))
+                else:
+                    params['vsearch'] = ''
+            else:
+                params['vsearch'] = ''
+
+            if(params['vsearch'] == ''):
+                keyboard = xbmc.Keyboard()
+                keyboard.setHeading(xbmcup.app.lang[30112])
+                keyboard.doModal()
+                usersearch = keyboard.getText(0)
+                vsearch = usersearch.decode('utf-8')
+                params['vsearch'] = vsearch
+                params['usersearch'] = urllib.quote_plus(usersearch)
+
+        if not usersearch: return
+        try:
+            SQL.set('INSERT INTO search (value) VALUES ("%s")' % (vsearch))
+        except sqlite.IntegrityError:
+            SQL.set('DELETE FROM search WHERE `value` = "%s"' % (vsearch))
+            SQL.set('INSERT INTO search (value) VALUES ("%s")' % (vsearch))
+        except:
+            pass
+
+        if(len(history) >= req_count):
+            SQL.set('DELETE FROM search WHERE `id` = (SELECT MIN(id) FROM search)')
 
         page_url = "search/index/index/usersearch/"+params['usersearch']
 
@@ -155,7 +205,19 @@ class BookmarkList(AbstactList):
         except:
             url = ''
 
-        print url
+        try:
+            page = params['page']
+        except:
+            page = 1
+
+        try:
+            params['keyboard']
+        except:
+            params['keyboard'] = False
+
+        if(params['keyboard']):
+            self.add_dir()
+            return False
 
         if(url == ''):
             if(xbmcup.app.setting['is_logged'] == 'false'):
@@ -165,7 +227,7 @@ class BookmarkList(AbstactList):
             self._variables['is_item'] = False
             self.render(cache=False)
         else:
-            self.show_movies(url)
+            self.show_movies(url, page)
             self._variables['is_item'] = False
             self.render(cache=False)
 
@@ -174,21 +236,46 @@ class BookmarkList(AbstactList):
         md5.update('/bookmarks')
         response = CACHE(str(md5.hexdigest()), self.get_bookmarks)
 
+        self.item(xbmcup.app.lang[30157],
+                        self.link('bookmarks', {'keyboard': True}),
+                        folder=False)
+
         if(len(response['data']) > 0):
             for movie in response['data']:
+                menu = []
+                menu.append([xbmcup.app.lang[30158], self.link('context', {'action': 'del_bookmark_dir', 'id' : movie['url']})])
                 self.item(movie['name'],
                         self.link('bookmarks', {'url' : movie['url']}),
-                        folder=True, cover=movie['img'])
+                        folder=True, cover=movie['img'], menu=menu)
         else:
             self.item(u'[COLOR red]['+xbmcup.app.lang[30111]+'][/COLOR]', self.link('null'), folder=False, cover=cover.info)
 
-    def show_movies(self, url):
-        url = 'users/profile/bookmark?bookmark=%s&_=1422563130401' % (url[0])
+    def show_movies(self, url, page):
+        params = {}
+        params['url'] = url
+        url = 'users/profile/bookmark?bookmark=%s&page=%s&_=1422563130401' % (url[0],str(page))
         md5 = hashlib.md5()
         md5.update(url)
         response = CACHE(str(md5.hexdigest()), self.get_movies, url, 0, 'book_mark_content', True)
-        print response
+
+        if(page > 1):
+            params['page'] = page-1
+            self.item('[COLOR green]'+xbmcup.app.lang[30106]+'[/COLOR]', self.replace('bookmarks', params), cover=cover.prev)
+            params['page'] = page+1
+
         self.add_movies(response, 30152)
+
+        params['page'] = page+1
+        if(response['page']['maxpage'] >= response['page']['pagenum']+1):
+            self.item(u'[COLOR green]'+xbmcup.app.lang[30107]+'[/COLOR]', self.replace('bookmarks', params), cover=cover.next)
+
+    def add_dir(self):
+        keyboard = xbmc.Keyboard()
+        keyboard.setHeading(xbmcup.app.lang[30112])
+        keyboard.doModal()
+        dirname = keyboard.getText(0)
+        if not dirname: return False
+        self.ajax('%s/users/profile/addbookmark?name=%s' % (SITE_URL, dirname))
 
 
 

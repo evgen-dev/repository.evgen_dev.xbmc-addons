@@ -11,6 +11,9 @@
 		
 		<setting label="31015" type="lsep"/>
 		<setting label="31016" type="enum" id="quality" default="0" lvalues="34017|34018|34019|34020|34021"/>
+		
+		<setting label="34022" type="lsep"/>
+		<setting id="search_history" type="number" label="34023" default="20" />
 	</category>
 	
 	<category label="31002">

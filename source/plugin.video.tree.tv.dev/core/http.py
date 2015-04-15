@@ -29,6 +29,26 @@ class HttpData:
                 return response.text
             return None
 
+    def post(self, url, data):
+        try:
+            data
+        except:
+            data = {}
+        try:
+            self.auth = Auth()
+            self.cookie = self.auth.get_cookies()
+            response = xbmcup.net.http.post(url, data, cookies=self.cookie)
+        except xbmcup.net.http.exceptions.RequestException:
+            print traceback.format_exc()
+            return None
+        else:
+            if(response.status_code == 200):
+                if(self.auth.check_auth(response.text) == False):
+                    self.auth.autorize()
+                return response.text
+            return None
+
+
     def ajax(self, url):
         try:
             self.auth = Auth()
@@ -297,7 +317,10 @@ class HttpData:
             try:
                 info['maxpage'] = int(wrap.find('a', class_='last').get('rel')[0])
             except:
-                info['maxpage'] = int(os.path.basename(wrap.find('a', class_='next').get('href')))
+                try:
+                    info['maxpage'] = int(os.path.basename(wrap.find('a', class_='next').get('href')))
+                except:
+                    info['maxpage'] = wrap.find('a', class_='next').get('rel')
         except:
             info['pagenum'] = 1
             info['maxpage'] = 1

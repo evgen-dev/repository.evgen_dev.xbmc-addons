@@ -13,7 +13,7 @@
     <string id="30116">Мультфильмы</string>
     <string id="30117">ТВ-передачи</string>
     <string id="30118">Аниме</string>
-    <string id="30119">Подборки</string>
+    <string id="30119">[COLOR green]Тематические подборки фильмов[/COLOR]</string>
     <string id="30120">Расширенный поиск</string>
     <string id="30121">Очередь просмотра</string>
     
@@ -40,7 +40,7 @@
 	
 	<string id="30144">Год выпуска</string>
 	<string id="30145">Год выпуска: [COLOR blue]%s[/COLOR]</string>
-	<string id="30146">Закладки</string>
+	<string id="30146">[COLOR yellow]Мои закладки[/COLOR]</string>
 	<string id="30147">Добавить в закладки</string>
 	<string id="30148">Удалить из закладок</string>
 	<string id="30149">Этот раздел станет доступным после авторизации</string>
@@ -50,7 +50,12 @@
 	<string id="30153">Авторизуйтесь, для использования закладок</string>
 	<string id="30154">Не удалось добавить закладку</string>
 	<string id="30155">Не удалось удалить закладку</string>
-	
+	<string id="30156">Добавить закладку в...</string>
+	<string id="30157">[COLOR blue][Создать папку][/COLOR]</string>
+	<string id="30158">[COLOR red]Удалить папку[/COLOR]</string>
+	<string id="30159">Папка закладок удалена</string>
+	<string id="30160">[COLOR blue]Рубрики:[/COLOR]</string>
+	<string id="30161">История поиска</string>
 
 	<!-- Settings -->
 	<string id="31001">Общие</string>
@@ -75,5 +80,7 @@
     <string id="34019">480</string>
     <string id="34020">720</string>
     <string id="34021">1080</string>
+    <string id="34022">История поиска</string>
+    <string id="34023">Количество последних поисковых запросов</string>
 
 </strings>

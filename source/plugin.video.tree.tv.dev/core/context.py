@@ -25,10 +25,16 @@ class ContextMenu(xbmcup.app.Handler, HttpData, Render):
 
 
     def add_bookmark(self, params):
+        try:
+            bookmark_dir = params['dir']
+        except:
+            return False
+            #bookmark_dir = self.get_book_dir()
+
         if not self.is_logged:
             xbmcup.gui.message(xbmcup.app.lang[30153].encode('utf-8'))
             return False
-        resp = self.ajax('%s/users/profile/addtobookmark?film_id=%s&bookmark_id=%s' % (SITE_URL, params['id'], self.get_book_dir()))
+        resp = self.ajax('%s/users/profile/addtobookmark?film_id=%s&bookmark_id=%s' % (SITE_URL, params['id'], bookmark_dir))
         try:
             resp = json.loads(resp)
             if(resp['result'] == True):
@@ -38,6 +44,29 @@ class ContextMenu(xbmcup.app.Handler, HttpData, Render):
                 print resp
         except:
             pass
+
+    def add_bookmark_in(self, params):
+        response = self.get_bookmarks()[1]
+        if(len(response['data']) == 0):
+            return
+        folders = [xbmcup.app.lang[30157]]
+        hrefs = ['add_dir']
+        for movie in response['data']:
+            hrefs.append(movie['url'])
+            folders.append(movie['name'])
+        ret = xbmcup.gui.select(xbmcup.app.lang[30156], folders)
+        if (ret != None):
+            if(hrefs[ret] == 'add_dir'):
+                keyboard = xbmc.Keyboard()
+                keyboard.setHeading(xbmcup.app.lang[30112])
+                keyboard.doModal()
+                dirname = keyboard.getText(0)
+                if not dirname: return False
+                self.ajax('%s/users/profile/addbookmark?name=%s' % (SITE_URL, dirname))
+                self.add_bookmark_in(params)
+                return False
+            else:
+                self.add_bookmark({'id' : params['id'], 'dir' : hrefs[ret][0]})
 
     def del_bookmark(self, params):
         resp = self.ajax('%s/film/index/deletefromfavorietes?id_film=%s' % (SITE_URL, params['id']))
@@ -68,3 +97,11 @@ class ContextMenu(xbmcup.app.Handler, HttpData, Render):
                     break
 
         return xbmcup.app.setting['bookmark_dir']
+
+
+    def del_bookmark_dir(self, params):
+        data = {}
+        data['bookmark['+params['id'][0]+'][delete]'] = 1;
+        self.post('%s/users/profile/editbookmark?type=change' % (SITE_URL), data)
+        xbmcup.gui.message(xbmcup.app.lang[30159].encode('utf-8'))
+        xbmc.executebuiltin('Container.Refresh()')
