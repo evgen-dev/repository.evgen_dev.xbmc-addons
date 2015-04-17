@@ -168,26 +168,27 @@ class SearchList(AbstactList):
         if(len(history) >= req_count):
             SQL.set('DELETE FROM search WHERE `id` = (SELECT MIN(id) FROM search)')
 
-        page_url = "search/index/index/usersearch/"+params['usersearch']
-
+        #page_url = "search/index/index/usersearch/"+params['usersearch']
+        page_url = "search"
         md5 = hashlib.md5()
-        md5.update(page_url+'/page/'+str(page))
-        response = CACHE(str(md5.hexdigest()), self.get_movies, page_url, page)
+        #md5.update(page_url+'/page/'+str(page))
+        md5.update(params['usersearch'])
+        response = CACHE(str(md5.hexdigest()), self.get_movies, page_url, page, 'main_content_item', False, usersearch)
 
         self.item(u'[COLOR yellow]'+xbmcup.app.lang[30108]+'[/COLOR]', self.link('search'), folder=True, cover=cover.search)
         self.item('[COLOR blue]['+xbmcup.app.lang[30109]+': '+vsearch+'][/COLOR]',
                   self.link('null'), folder=False, cover=cover.info)
 
-        if(response['page']['pagenum'] > 1):
-            params['page'] = page-1
-            self.item('[COLOR green]'+xbmcup.app.lang[30106]+'[/COLOR]', self.replace('search', params), cover=cover.prev)
-            params['page'] = page+1
+        #if(response['page']['pagenum'] > 1):
+        #    params['page'] = page-1
+        #    self.item('[COLOR green]'+xbmcup.app.lang[30106]+'[/COLOR]', self.replace('search', params), cover=cover.prev)
+        #    params['page'] = page+1
 
         self.add_movies(response)
 
-        params['page'] = page+1
-        if(response['page']['maxpage'] >= response['page']['pagenum']+1):
-            self.item(u'[COLOR green]'+xbmcup.app.lang[30107]+'[/COLOR]', self.replace('search', params), cover=cover.next)
+        #params['page'] = page+1
+        #if(response['page']['maxpage'] >= response['page']['pagenum']+1):
+        #    self.item(u'[COLOR green]'+xbmcup.app.lang[30107]+'[/COLOR]', self.replace('search', params), cover=cover.next)
 
 
 class BookmarkList(AbstactList):

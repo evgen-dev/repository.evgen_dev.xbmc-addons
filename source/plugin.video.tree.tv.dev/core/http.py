@@ -64,14 +64,18 @@ class HttpData:
         else:
             return response.text if response.status_code == 200 else None
 
-    def get_movies(self, url, page, classname='main_content_item', nocache=False):
+    def get_movies(self, url, page, classname='main_content_item', nocache=False, search=""):
         page = int(page)
         if(page > 0):
             url = SITE_URL+"/"+url.strip('/')+"/page/"+str(page+1)
         else:
             url = SITE_URL+"/"+url.strip('/')
         print url
-        html = self.load(url)
+
+        if(search != ''):
+            html = self.post(url, {'usersearch' : search})
+        else:
+            html = self.load(url)
 
         if not html:
             return None, {'page': {'pagenum' : 0, 'maxpage' : 0}, 'data': []}
@@ -79,7 +83,7 @@ class HttpData:
         soup = xbmcup.parser.html(self.strip_scripts(html))
         result['page'] = self.get_page(soup)
         center_menu = soup.find('div', class_=classname)
-        print len(center_menu.find_all('div', class_='item'))
+
         try:
             for div in center_menu.find_all('div', class_='item'):
                 href = div.find('h2').find('a')
