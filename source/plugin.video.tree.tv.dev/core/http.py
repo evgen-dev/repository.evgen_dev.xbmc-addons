@@ -77,6 +77,8 @@ class HttpData:
         else:
             html = self.load(url)
 
+        #print html.encode('utf-8')
+
         if not html:
             return None, {'page': {'pagenum' : 0, 'maxpage' : 0}, 'data': []}
         result = {'page': {}, 'data': []}
@@ -117,7 +119,7 @@ class HttpData:
                         movieposter = img_src
                         break
                 movie_url = href.get('href'),
-                movie_id = re.compile('id=([\d]+)', re.S).findall(movie_url[0])[0]
+                movie_id = re.compile('/film/([\d]+)-', re.S).findall(movie_url[0])[0]
 
                 result['data'].append({
                         'url': movie_url,
@@ -137,9 +139,9 @@ class HttpData:
 
 
     def get_movie_info(self, url):
-        url = SITE_URL+"/"+url[0]
+        url = SITE_URL+url[0]
         html = self.load(url)
-
+        print url.encode('utf-8')
         movieInfo = {}
         movieInfo['no_files'] = None
         movieInfo['episodes'] = True
