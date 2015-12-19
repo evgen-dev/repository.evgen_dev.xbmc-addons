@@ -64,7 +64,7 @@ class HttpData:
         else:
             return response.text if response.status_code == 200 else None
 
-    def get_movies(self, url, page, classname='main_content_item', nocache=False, search=""):
+    def get_movies(self, url, page, classname='main_content_item', nocache=False, search="", itemclassname="item"):
         page = int(page)
         if(page > 0):
             url = SITE_URL+"/"+url.strip('/')+"/page/"+str(page+1)
@@ -87,7 +87,7 @@ class HttpData:
         center_menu = soup.find('div', class_=classname)
 
         try:
-            for div in center_menu.find_all('div', class_='item'):
+            for div in center_menu.find_all('div', class_=itemclassname):
                 href = div.find('h2').find('a')
                 try:
                     quality = div.find('span', class_='quality_film_title').get_text().strip()
@@ -96,13 +96,19 @@ class HttpData:
 
                 dop_information = []
                 try:
-                    year = div.find('div', class_='smoll_year').get_text().strip()
+                    if(itemclassname == 'item_wrap'):
+                        year = div.find('a', class_='fast_search').get_text().strip()
+                    else:
+                        year = div.find('div', class_='smoll_year').get_text().strip()
                     dop_information.append(year)
                 except:
                     pass
 
                 try:
-                    genre = div.find('div', class_='smoll_janr').get_text().strip()
+                    if(itemclassname == 'item_wrap'):
+                        genre = div.find('span', class_='section_item_list').get_text().strip()
+                    else:
+                        genre = div.find('div', class_='smoll_janr').get_text().strip()
                     dop_information.append(genre)
                 except:
                     pass
@@ -115,7 +121,7 @@ class HttpData:
                 movieposter = None
                 for img in posters:
                     img_src = img.get('src')
-                    if(img_src.find('/public/') != -1):
+                    if(img_src.find('http') != -1):
                         movieposter = img_src
                         break
                 movie_url = href.get('href'),
@@ -127,8 +133,10 @@ class HttpData:
                         'quality': self.format_quality(quality),
                         'year': information,
                         'name': href.get_text().strip(),
-                        'img': None if not movieposter else (SITE_URL + movieposter)
+                        'img': None if not movieposter else movieposter
                     })
+
+            print result['data']
         except:
             print traceback.format_exc()
         print nocache
@@ -157,7 +165,7 @@ class HttpData:
 
         js_string = re.compile("'source' : \$\.parseJSON\('([^\']+)'\)", re.S).findall(html)[0].decode('string_escape').decode('utf-8')
         movies = json.loads(js_string, 'utf-8')
-        print movies
+        #print movies
         if(movies != None and len(movies) > 0):
             for window_id in movies:
                 current_movie = {'folder_title' : '', 'movies': {}}
@@ -192,7 +200,7 @@ class HttpData:
             except:
                 movieInfo['fanart'] = ''
             try:
-                movieInfo['cover'] = SITE_URL+soup.find('img', id='preview_img').get('src')
+                movieInfo['cover'] = soup.find('img', id='preview_img').get('src')
             except:
                 movieInfo['cover'] = ''
             try:
@@ -227,7 +235,7 @@ class HttpData:
         url = SITE_URL+"/collection"
         html = self.load(url)
         if not html:
-            return None, {'page': {'pagenum' : 0, 'maxpage' : 0}, 'data': []}
+            return None, {'page': {'pagenum' : 0, 'maxpage' : 10}, 'data': []}
         html = html.encode('utf-8')
         result = {'page': {}, 'data': []}
         soup = xbmcup.parser.html(self.strip_scripts(html))
@@ -318,7 +326,8 @@ class HttpData:
     def get_page(self, soup):
         info = {'pagenum' : 0, 'maxpage' : 0}
         try:
-            wrap  = soup.find('div', class_='paginationControl')
+            wrap  = soup.find('div', id='main_paginator')
+
             info['pagenum'] = int(wrap.find('b').get_text().encode('utf-8'))
             try:
                 info['maxpage'] = int(wrap.find('a', class_='last').get('rel')[0])

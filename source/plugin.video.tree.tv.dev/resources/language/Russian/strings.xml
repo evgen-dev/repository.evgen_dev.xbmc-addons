@@ -73,7 +73,7 @@
     <string id="31013">Войти</string>
     <string id="31014">Выйти</string>
     
-    <string id="31015">Предпочитаемое качество</string>
+    <string id="31015">Настройки качества</string>
     <string id="31016">Если доступно, автоматически выбирать</string>
     <string id="34017">Всегда спрашивать</string>
     <string id="34018">360</string>
@@ -82,5 +82,6 @@
     <string id="34021">1080</string>
     <string id="34022">История поиска</string>
     <string id="34023">Количество последних поисковых запросов</string>
+    <string id="34024">Выбирать равное или меньшее качество</string>
 
 </strings>

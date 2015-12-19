@@ -8,3 +8,4 @@ class Render:
         skin = xbmc.getSkinDir()
         if(skin == 'skin.confluence' or skin == 'skin.confluence-ploop'):
             xbmc.executebuiltin("Container.SetViewMode(503)")
+            #print skin

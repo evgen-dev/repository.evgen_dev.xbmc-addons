@@ -45,7 +45,7 @@ class CollectionList(AbstactList):
         if(url == ''):
             self.show_dirs()
         else:
-            self.show_movies(url)
+            self.show_movies(url, params)
 
     def show_dirs(self):
         md5 = hashlib.md5()
@@ -60,11 +60,27 @@ class CollectionList(AbstactList):
         else:
             self.item(u'[COLOR red]['+xbmcup.app.lang[30111]+'][/COLOR]', self.link('null'), folder=False, cover=cover.info)
 
-    def show_movies(self, url):
+    def show_movies(self, url, params):
+        try:
+            page = int(params['page'])
+        except:
+            params['page'] = 0
+            page = 0
+
         md5 = hashlib.md5()
         md5.update(url)
-        response = CACHE(str(md5.hexdigest()), self.get_movies, url, 0)
+        response = CACHE(str(md5.hexdigest()), self.get_movies, url, page, 'main_content_item', False, "", "item_wrap")
+
+        if(response['page']['pagenum'] > 1):
+            params['page'] = page-1
+            self.item('[COLOR green]'+xbmcup.app.lang[30106]+'[/COLOR]', self.replace('collection', params), cover=cover.prev)
+            params['page'] = page+1
+
         self.add_movies(response)
+
+        params['page'] = page+1
+        if(response['page']['maxpage'] >= response['page']['pagenum']+1):
+            self.item('[COLOR green]'+xbmcup.app.lang[30107]+'[/COLOR]', self.replace('collection', params), cover=cover.next)
 
 
 class MovieList(AbstactList):
@@ -290,7 +306,7 @@ class QualityList(xbmcup.app.Handler, HttpData, Render):
 
     def handle(self):
         self.params = self.argv[0]
-        print self.argv[0]
+        #print self.argv[0]
         try:
             self.movieInfo = self.params['movieInfo']
         except:
@@ -301,7 +317,8 @@ class QualityList(xbmcup.app.Handler, HttpData, Render):
         except:
             self.params['sub_dir'] = None
 
-        default_quality = QUALITYS[int(xbmcup.app.setting['quality'])]
+        quality_settings = int(xbmcup.app.setting['quality'])
+        default_quality = QUALITYS[quality_settings]
 
         try:
             self.params['quality_dir'] = int(self.params['quality_dir'])
@@ -314,12 +331,28 @@ class QualityList(xbmcup.app.Handler, HttpData, Render):
             self.def_dir=  self.params['sub_dir']
 
         print default_quality
+
         if(default_quality != None and self.params['quality_dir'] == None):
             try:
                 test = self.movieInfo['movies'][self.def_dir]['movies'][str(default_quality)]
                 self.params['quality_dir'] = str(default_quality)
             except:
-                pass
+                if(xbmcup.app.setting['lowest_quality'] == 'true'):
+                    quality_settings -= 1
+                    if(quality_settings > 1):
+                        try:
+                            default_quality = str(QUALITYS[quality_settings])
+                            test = self.movieInfo['movies'][self.def_dir]['movies'][default_quality]
+                            self.params['quality_dir'] = default_quality
+                        except:
+                            quality_settings -= 1
+                            if(quality_settings > 1):
+                                try:
+                                    default_quality = str(QUALITYS[quality_settings])
+                                    test = self.movieInfo['movies'][self.def_dir]['movies'][default_quality]
+                                    self.params['quality_dir'] = default_quality
+                                except:
+                                    pass
 
         #если на сайте несколько папок с файлами
         if((len(self.movieInfo['movies']) > 1 and self.params['sub_dir'] == None) or self.movieInfo['no_files'] != None):
