@@ -326,16 +326,23 @@ class HttpData:
     def get_page(self, soup):
         info = {'pagenum' : 0, 'maxpage' : 0}
         try:
-            wrap  = soup.find('div', id='main_paginator')
+            try:
+                wrap  = soup.find('div', id='main_paginator')
+                wrap.find('b')
+            except:
+                wrap  = soup.find('div', class_='paginationControl')
 
             info['pagenum'] = int(wrap.find('b').get_text().encode('utf-8'))
             try:
                 info['maxpage'] = int(wrap.find('a', class_='last').get('rel')[0])
             except:
                 try:
-                    info['maxpage'] = int(os.path.basename(wrap.find('a', class_='next').get('href')))
+                    try:
+                        info['maxpage'] = int(os.path.basename(wrap.find('a', class_='next').get('href')))
+                    except:
+                        info['maxpage'] = wrap.find('a', class_='next').get('rel')
                 except:
-                    info['maxpage'] = wrap.find('a', class_='next').get('rel')
+                    info['maxpage'] = info['pagenum'];
         except:
             info['pagenum'] = 1
             info['maxpage'] = 1
