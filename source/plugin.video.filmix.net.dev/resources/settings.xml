@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="utf-8" standalone="yes"?>
 <settings>
 	<category label="31001">
-		<setting label="31003" type="lsep"/>
-		<setting label="31008" type="enum" id="sort_by" default="2" lvalues="31005|31006|31007"/>
+		<!--setting label="31003" type="lsep"/>
+		<setting label="31008" type="enum" id="sort_by" default="2" lvalues="31005|31006|31007"/-->
 		
 		<setting label="31004" type="lsep"/>
 		<setting id="cache_time" type="number" label="31009" default="10" />

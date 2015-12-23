@@ -1,0 +1,88 @@
+<strings>
+    <string id="30106">&lt;&lt; Предыдущая страница</string>
+    <string id="30107">Следующая страница &gt;&gt;</string>
+    <string id="30108">Новый поиск</string>
+    <string id="30109">Поиск по запросу</string>
+    <string id="30110">Поиск не дал результатов</string>
+    <string id="30111">Категория пуста</string>
+    <string id="30112">Поиск</string>
+    <string id="30113">Папка</string>
+    
+	<string id="30114">Фильмы</string>
+    <string id="30115">Сериалы</string>
+    <string id="30116">Мультфильмы</string>
+    <string id="30117">Мультсериалы</string>
+
+    <string id="30119">[COLOR green]Тематические подборки фильмов[/COLOR]</string>
+    <string id="30120">Расширенный поиск</string>
+    <string id="30121">Очередь просмотра</string>
+    
+	<string id="30128">Рубрика: [COLOR blue]%s[/COLOR]</string>
+	<string id="30129">Жанр: [COLOR blue]%s[/COLOR]</string>
+	<string id="30130">Качество: [COLOR blue]%s[/COLOR]</string>
+	<string id="30131">Перевод/озвучка: [COLOR blue]%s[/COLOR]</string>
+	<string id="30132">Страна: [COLOR blue]%s[/COLOR]</string>
+	<string id="30133">[COLOR green][Применить выбранные фильтры][/COLOR]</string>
+	<string id="30134">[COLOR yellow]Результаты поиска [COLOR blue][Страница %s][/COLOR]:[/COLOR]</string>
+	
+
+	<string id="30135">Любой</string>
+	<string id="30136">Не важно</string>
+	
+	<string id="30137">Рубрика</string>
+	<string id="30138">Жанр</string>
+	<string id="30139">Качество</string>
+	<string id="30140">Перевод/озвучка</string>
+	<string id="30141">Производство</string>
+	
+	<string id="30142">Наше</string>
+	<string id="30143">Зарубежное</string>
+	
+	<string id="30144">Год выпуска</string>
+	<string id="30145">Год выпуска: [COLOR blue]%s[/COLOR]</string>
+	<string id="30146">[COLOR yellow]Мои закладки[/COLOR]</string>
+	<string id="30147">Добавить в закладки</string>
+	<string id="30148">Удалить из закладок</string>
+	<string id="30149">Этот раздел станет доступным после авторизации</string>
+	<string id="30150">Закладка добавлена</string>
+	<string id="30151">Закладка удалена</string>
+	<string id="30152">Нет закладок</string>
+	<string id="30153">Авторизуйтесь, для использования закладок</string>
+	<string id="30154">Не удалось добавить закладку</string>
+	<string id="30155">Не удалось удалить закладку</string>
+	<string id="30156">Добавить закладку в...</string>
+	<string id="30157">[COLOR blue][Создать папку][/COLOR]</string>
+	<string id="30158">[COLOR red]Удалить папку[/COLOR]</string>
+	<string id="30159">Папка закладок удалена</string>
+	<string id="30160">[COLOR blue]Рубрики:[/COLOR]</string>
+	<string id="30161">История поиска</string>
+
+	<!-- Settings -->
+	<string id="31001">Общие</string>
+	<string id="31002">Авторизация</string>
+	<string id="31003">Настройки сортировки</string>
+	<string id="31004">Настройки кеширования</string>
+	<string id="31005">по просмотрам</string>
+	<string id="31006">по рейтингу</string>
+	<string id="31007">по дате добавления</string>
+	<string id="31008">Сортировать</string>
+	<string id="31009">Время жизни кеша в минутах (0 - откл. кеширование)</string>
+    <string id="31010">Очистить кеш</string>
+    <string id="31011">Логин</string>
+    <string id="31012">Пароль</string>
+    <string id="31013">Войти</string>
+    <string id="31014">Выйти</string>
+    
+    <string id="31015">Настройки качества</string>
+    <string id="31016">Если доступно, автоматически выбирать</string>
+    <string id="34017">Всегда спрашивать</string>
+    <string id="34018">360</string>
+    <string id="34019">480</string>
+    <string id="34020">720</string>
+    <string id="34021">1080</string>
+    <string id="34022">История поиска</string>
+    <string id="34023">Количество последних поисковых запросов</string>
+    <string id="34024">Выбирать равное или меньшее качество</string>
+	<string id="34025">FLV</string>
+
+</strings>

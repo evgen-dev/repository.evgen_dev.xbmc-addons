@@ -16,30 +16,56 @@ CACHE_TIME = 60*60*24*7
 class FilterData(HttpData):
 
     def get_genre_list(self):
-        html = self.load('%s/default/index/janrs' % SITE_URL)
+        html = self.load('%s/search' % SITE_URL)
         result = {'name' : [xbmcup.app.lang[30135]], 'href': ['']}
         if not html:
             return None, result
         soup = xbmcup.parser.html(self.strip_scripts(html))
-        genres = soup.find('div', class_='scroll-pane').find_all('a')
+        genres = soup.find('section', id='items-more-ganres').find_all('span', class_='item')
         for genre in genres:
             result['name'].append(genre.get_text().strip().encode('utf-8').decode('utf-8'))
-            result['href'].append("janrs/%s" % genre.get('rel')[0].encode('utf-8').decode('utf-8'))
+            result['href'].append(genre.get('data-scope')[0].encode('utf-8').decode('utf-8')+genre.get('data-value')[0].encode('utf-8').decode('utf-8'))
+        print result
+        return CACHE_TIME, result
 
+    def get_quality_list(self):
+        html = self.load('%s/search' % SITE_URL)
+        result = {'name' : [xbmcup.app.lang[30135]], 'href': ['']}
+        if not html:
+            return None, result
+        soup = xbmcup.parser.html(self.strip_scripts(html))
+        genres = soup.find('section', id='items-more-rip').find_all('span', class_='item')
+        for genre in genres:
+            result['name'].append(genre.get_text().strip().encode('utf-8').decode('utf-8'))
+            result['href'].append(genre.get('data-scope')[0].encode('utf-8').decode('utf-8')+genre.get('data-value')[0].encode('utf-8').decode('utf-8'))
+        print result
+        return CACHE_TIME, result
+
+    def get_country_list(self):
+        html = self.load('%s/search' % SITE_URL)
+        result = {'name' : [xbmcup.app.lang[30135]], 'href': ['']}
+        if not html:
+            return None, result
+        soup = xbmcup.parser.html(self.strip_scripts(html))
+        genres = soup.find('section', id='items-more-country').find_all('span', class_='item')
+        for genre in genres:
+            result['name'].append(genre.get_text().strip().encode('utf-8').decode('utf-8'))
+            result['href'].append(genre.get('data-scope')[0].encode('utf-8').decode('utf-8')+genre.get('data-value')[0].encode('utf-8').decode('utf-8'))
+        print result
         return CACHE_TIME, result
 
     def get_awards_list(self):
-            html = self.load('%s/default/index/awards' % SITE_URL)
-            result = {'name' : [xbmcup.app.lang[30136]], 'href': ['']}
-            if not html:
-                return None, result
-            soup = xbmcup.parser.html(self.strip_scripts(html))
-            avards = soup.find('div', id='awards').find_all('div', class_='awards_item')
-            for avard in avards:
-                result['name'].append(avard.find('p').get_text().strip().encode('utf-8').decode('utf-8'))
-                result['href'].append("awards/%s" % avard.find('a').get('rel')[0].encode('utf-8').decode('utf-8'))
-
-            return CACHE_TIME, result
+        html = self.load('%s/search' % SITE_URL)
+        result = {'name' : [xbmcup.app.lang[30135]], 'href': ['']}
+        if not html:
+            return None, result
+        soup = xbmcup.parser.html(self.strip_scripts(html))
+        genres = soup.find('section', id='items-more-translate').find_all('span', class_='item')
+        for genre in genres:
+            result['name'].append(genre.get_text().strip().encode('utf-8').decode('utf-8'))
+            result['href'].append(genre.get('data-scope')[0].encode('utf-8').decode('utf-8')+genre.get('data-value')[0].encode('utf-8').decode('utf-8'))
+        print result
+        return CACHE_TIME, result
 
 
 
@@ -52,18 +78,18 @@ class Filter(FilterData, AbstactList):
 
         self.rubric_list = {
             'name' : [
+                xbmcup.app.lang[30136],
                 xbmcup.app.lang[30114],
                 xbmcup.app.lang[30115],
                 xbmcup.app.lang[30116],
-                xbmcup.app.lang[30117],
-                xbmcup.app.lang[30118],
+                xbmcup.app.lang[30117]
             ],
             'href' : [
-                '/films/',
-                '/serials/',
-                '/multfilms/',
-                '/onlinetv/',
-                '/anime/',
+                '',
+                's999',
+                's14',
+                's7',
+                's93'
             ]
         }
 
@@ -94,8 +120,8 @@ class Filter(FilterData, AbstactList):
         self.item(xbmcup.app.lang[30129] % genre[0],       self.replace('filter', {'window' : 'genre',   'filter' : filter}),  folder=True, cover=cover.search)
         self.item(xbmcup.app.lang[30145] % year[0],       self.replace('filter', {'window' : 'years',   'filter' : filter}),  folder=True, cover=cover.search)
         self.item(xbmcup.app.lang[30130] % qiality[0],     self.replace('filter', {'window' : 'qualitys','filter' : filter}),  folder=True, cover=cover.search)
-        self.item(xbmcup.app.lang[30131] % award[0],       self.replace('filter', {'window' : 'awards',  'filter' : filter}),  folder=True, cover=cover.search)
         self.item(xbmcup.app.lang[30132] % production[0],  self.replace('filter', {'window' : 'productions', 'filter' : filter}),  folder=True, cover=cover.search)
+        self.item(xbmcup.app.lang[30131] % award[0],       self.replace('filter', {'window' : 'awards',  'filter' : filter}),  folder=True, cover=cover.search)
 
         self.item(xbmcup.app.lang[30133],
                   self.replace('filter', {'window' : '', 'filter' : filter, 'show_results' : True, 'page' : 0}),
@@ -108,10 +134,13 @@ class Filter(FilterData, AbstactList):
         except:
             sort_by = 'new'
 
-        url = filter['rubrics'][1]+"sortType/%s/" % sort_by
+        url = "filters/"
+        params = []
         for key in filter:
-            if(key != 'rubrics' and filter[key][1] != ''):
-                url = url+"%s/" % filter[key][1].strip('/')
+            if(filter[key][1] != ''):
+                params.append(filter[key][1])
+
+        url = url+('-'.join(params))
 
         if(show_results == True):
             md5 = hashlib.md5()
@@ -122,7 +151,7 @@ class Filter(FilterData, AbstactList):
             if(response['page']['maxpage'] == 0):
                 response['page']['maxpage'] = response['page']['pagenum']
 
-            self.item(xbmcup.app.lang[30134] % (str(response['page']['pagenum']), str(response['page']['maxpage'])),
+            self.item(xbmcup.app.lang[30134] % (str(response['page']['pagenum'])),
                       self.link('null'),  folder=False, cover=cover.search)
 
 
@@ -144,38 +173,16 @@ class Filter(FilterData, AbstactList):
         return False if ret < 0 else [self.rubric_list['name'][ret], self.rubric_list['href'][ret], ret]
 
     def qualitys_window(self):
-        self.quality_list = {
-            'name' : [
-                xbmcup.app.lang[30136],
-                "HD",
-                "HQ",
-                "SQ",
-                "LQ"
-            ],
-            'href' : [
-                '',
-                'quality/HD',
-                'quality/HQ',
-                'quality/SQ',
-                'quality/LQ'
-            ]
-        }
+        md5 = hashlib.md5()
+        md5.update('/default/index/qualitys')
+        self.quality_list = CACHE(str(md5.hexdigest()), self.get_quality_list)
         ret = xbmcup.gui.select(xbmcup.app.lang[30139], self.quality_list['name'])
         return False if ret < 0 else [self.quality_list['name'][ret], self.quality_list['href'][ret], ret]
 
     def productions_window(self):
-        self.productions_list = {
-            'name' : [
-                xbmcup.app.lang[30136],
-                xbmcup.app.lang[30142],
-                xbmcup.app.lang[30143]
-            ],
-            'href' : [
-                '',
-                'production/our',
-                'production/foreign'
-            ]
-        }
+        md5 = hashlib.md5()
+        md5.update('/default/index/countries')
+        self.productions_list = CACHE(str(md5.hexdigest()), self.get_country_list)
         ret = xbmcup.gui.select(xbmcup.app.lang[30141], self.productions_list['name'])
         return False if ret < 0 else [self.productions_list['name'][ret], self.productions_list['href'][ret], ret]
 
@@ -198,4 +205,4 @@ class Filter(FilterData, AbstactList):
         years_list = map(str, list(reversed(range(1900, int(now_time.year)+1))))
         years_list.insert(0, xbmcup.app.lang[30135])
         ret = xbmcup.gui.select(xbmcup.app.lang[30144], years_list)
-        return False if ret < 0 else [years_list[ret], "year/%s" % str(years_list[ret]) if ret > 0 else '', ret]
+        return False if ret < 0 else [years_list[ret], "y%s" % str(years_list[ret]) if ret > 0 else '', ret]

@@ -1,8 +1,31 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 <addons>
+	<addon id="plugin.video.filmix.net.dev"
+       name="Filmix.Net"
+       version="0.0.1"
+       provider-name="Evgenii Devisok aka evgen_dev">
+	<requires>
+		<import addon="xbmc.python" version="2.14.0"/>
+		<import addon="script.module.xbmcup" version="0.1.1"/>
+	</requires>
+	<extension point="xbmc.python.pluginsource" provides="video" library="addon.py">
+		<provides>video</provides>
+	</extension>
+	<extension point="xbmc.addon.metadata">
+		<summary>Filmix.Net</summary>
+		<description>
+			 Filmix.Net - Вашему вниманию полнометражное кино и телесериалы, мультфильмы, трейлеры.
+		</description>
+		<platform>all</platform>
+		<license>GNU GENERAL PUBLIC LICENSE. Version 2, June 1991</license>
+		<forum></forum>
+		<email>xbmc@devisok.org</email>
+	</extension>
+</addon>
+
 	<addon id="plugin.video.tree.tv.dev"
        name="Tree.Tv"
-       version="0.1.3"
+       version="0.1.4"
        provider-name="Evgenii Devisok aka evgen_dev">
 	<requires>
 		<import addon="xbmc.python" version="2.14.0"/>
