@@ -24,46 +24,46 @@ class FilterData(HttpData):
         genres = soup.find('section', id='items-more-ganres').find_all('span', class_='item')
         for genre in genres:
             result['name'].append(genre.get_text().strip().encode('utf-8').decode('utf-8'))
-            result['href'].append(genre.get('data-scope')[0].encode('utf-8').decode('utf-8')+genre.get('data-value')[0].encode('utf-8').decode('utf-8'))
+            result['href'].append(genre.get('data-scope')[0].encode('utf-8').decode('utf-8')+genre.get('data-value').encode('utf-8').decode('utf-8'))
         print result
         return CACHE_TIME, result
 
     def get_quality_list(self):
         html = self.load('%s/search' % SITE_URL)
-        result = {'name' : [xbmcup.app.lang[30135]], 'href': ['']}
+        result = {'name' : [xbmcup.app.lang[30136]], 'href': ['']}
         if not html:
             return None, result
         soup = xbmcup.parser.html(self.strip_scripts(html))
         genres = soup.find('section', id='items-more-rip').find_all('span', class_='item')
         for genre in genres:
             result['name'].append(genre.get_text().strip().encode('utf-8').decode('utf-8'))
-            result['href'].append(genre.get('data-scope')[0].encode('utf-8').decode('utf-8')+genre.get('data-value')[0].encode('utf-8').decode('utf-8'))
+            result['href'].append(genre.get('data-scope')[0].encode('utf-8').decode('utf-8')+genre.get('data-value').encode('utf-8').decode('utf-8'))
         print result
         return CACHE_TIME, result
 
     def get_country_list(self):
         html = self.load('%s/search' % SITE_URL)
-        result = {'name' : [xbmcup.app.lang[30135]], 'href': ['']}
+        result = {'name' : [xbmcup.app.lang[30136]], 'href': ['']}
         if not html:
             return None, result
         soup = xbmcup.parser.html(self.strip_scripts(html))
         genres = soup.find('section', id='items-more-country').find_all('span', class_='item')
         for genre in genres:
             result['name'].append(genre.get_text().strip().encode('utf-8').decode('utf-8'))
-            result['href'].append(genre.get('data-scope')[0].encode('utf-8').decode('utf-8')+genre.get('data-value')[0].encode('utf-8').decode('utf-8'))
+            result['href'].append(genre.get('data-scope')[0].encode('utf-8').decode('utf-8')+genre.get('data-value').encode('utf-8').decode('utf-8'))
         print result
         return CACHE_TIME, result
 
     def get_awards_list(self):
         html = self.load('%s/search' % SITE_URL)
-        result = {'name' : [xbmcup.app.lang[30135]], 'href': ['']}
+        result = {'name' : [xbmcup.app.lang[30136]], 'href': ['']}
         if not html:
             return None, result
         soup = xbmcup.parser.html(self.strip_scripts(html))
         genres = soup.find('section', id='items-more-translate').find_all('span', class_='item')
         for genre in genres:
             result['name'].append(genre.get_text().strip().encode('utf-8').decode('utf-8'))
-            result['href'].append(genre.get('data-scope')[0].encode('utf-8').decode('utf-8')+genre.get('data-value')[0].encode('utf-8').decode('utf-8'))
+            result['href'].append(genre.get('data-scope')[0].encode('utf-8').decode('utf-8')+genre.get('data-value').encode('utf-8').decode('utf-8'))
         print result
         return CACHE_TIME, result
 
@@ -78,19 +78,28 @@ class Filter(FilterData, AbstactList):
 
         self.rubric_list = {
             'name' : [
-                xbmcup.app.lang[30136],
+                #xbmcup.app.lang[30136],
                 xbmcup.app.lang[30114],
                 xbmcup.app.lang[30115],
                 xbmcup.app.lang[30116],
                 xbmcup.app.lang[30117]
             ],
+            # 'href2' : [
+            #     #'',
+            #     's999',
+            #     's14',
+            #     's7',
+            #     's93'
+            # ],
+
             'href' : [
-                '',
-                's999',
-                's14',
-                's7',
-                's93'
+                #'',
+                'films',
+                'serialy',
+                'multfilmy',
+                'multserialy'
             ]
+
         }
 
         window = str(params.get('window', ''))
@@ -129,15 +138,15 @@ class Filter(FilterData, AbstactList):
 
         self.item('', self.link('null'),  folder=False, cover=cover.search)
 
-        try:
-            sort_by = SORT_TYPES[int(xbmcup.app.setting['sort_by'])]
-        except:
-            sort_by = 'new'
+        #try:
+        #    sort_by = SORT_TYPES[int(xbmcup.app.setting['sort_by'])]
+        #except:
+        #    sort_by = 'new'
 
-        url = "filters/"
+        url = "%s/" % filter['rubrics'][1]
         params = []
         for key in filter:
-            if(filter[key][1] != ''):
+            if(key != 'rubrics' and filter[key][1] != ''):
                 params.append(filter[key][1])
 
         url = url+('-'.join(params))
