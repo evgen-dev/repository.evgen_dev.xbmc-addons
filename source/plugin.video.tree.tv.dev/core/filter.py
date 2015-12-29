@@ -12,6 +12,7 @@ CACHE = xbmcup.db.Cache(xbmcup.system.fs('sandbox://'+CACHE_DATABASE))
 
 #кешируем загружаемые фильтры на неделю
 CACHE_TIME = 60*60*24*7
+CACHE_VERSION = '0.1.5'
 
 class FilterData(HttpData):
 
@@ -24,8 +25,8 @@ class FilterData(HttpData):
         genres = soup.find('div', class_='scroll-pane').find_all('a')
         for genre in genres:
             result['name'].append(genre.get_text().strip().encode('utf-8').decode('utf-8'))
-            result['href'].append("janrs/%s" % genre.get('rel')[0].encode('utf-8').decode('utf-8'))
-
+            result['href'].append("janrs/%s" % genre.get('data-rel').encode('utf-8').decode('utf-8'))
+        print result
         return CACHE_TIME, result
 
     def get_awards_list(self):
@@ -37,7 +38,7 @@ class FilterData(HttpData):
             avards = soup.find('div', id='awards').find_all('div', class_='awards_item')
             for avard in avards:
                 result['name'].append(avard.find('p').get_text().strip().encode('utf-8').decode('utf-8'))
-                result['href'].append("awards/%s" % avard.find('a').get('rel')[0].encode('utf-8').decode('utf-8'))
+                result['href'].append("awards/%s" % avard.find('a').get('data-rel').encode('utf-8').decode('utf-8'))
 
             return CACHE_TIME, result
 
@@ -181,14 +182,14 @@ class Filter(FilterData, AbstactList):
 
     def genre_window(self):
         md5 = hashlib.md5()
-        md5.update('/default/index/janrs')
+        md5.update('/default/index/janrs?v='+CACHE_VERSION)
         genres_list = CACHE(str(md5.hexdigest()), self.get_genre_list)
         ret = xbmcup.gui.select(xbmcup.app.lang[30138], genres_list['name'])
         return False if ret < 0 else [genres_list['name'][ret], genres_list['href'][ret], ret]
 
     def awards_window(self):
         md5 = hashlib.md5()
-        md5.update('/default/index/awards')
+        md5.update('/default/index/awards?v='+CACHE_VERSION)
         awards_list = CACHE(str(md5.hexdigest()), self.get_awards_list)
         ret = xbmcup.gui.select(xbmcup.app.lang[30140], awards_list['name'])
         return False if ret < 0 else [awards_list['name'][ret], awards_list['href'][ret], ret]
