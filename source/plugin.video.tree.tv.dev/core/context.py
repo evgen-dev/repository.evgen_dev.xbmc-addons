@@ -66,7 +66,7 @@ class ContextMenu(xbmcup.app.Handler, HttpData, Render):
                 self.add_bookmark_in(params)
                 return False
             else:
-                self.add_bookmark({'id' : params['id'], 'dir' : hrefs[ret][0]})
+                self.add_bookmark({'id' : params['id'], 'dir' : hrefs[ret]})
 
     def del_bookmark(self, params):
         resp = self.ajax('%s/film/index/deletefromfavorietes?id_film=%s' % (SITE_URL, params['id']))
