@@ -101,7 +101,8 @@ class ContextMenu(xbmcup.app.Handler, HttpData, Render):
 
     def del_bookmark_dir(self, params):
         data = {}
-        data['bookmark['+params['id'][0]+'][delete]'] = 1;
-        self.post('%s/users/profile/editbookmark?type=change' % (SITE_URL), data)
+        data['bookmark['+params['id']+'][delete]'] = 1;
+        h = self.post('%s/users/profile/editbookmark?type=change' % (SITE_URL), data)
+        print h.encode('utf8')
         xbmcup.gui.message(xbmcup.app.lang[30159].encode('utf-8'))
         xbmc.executebuiltin('Container.Refresh()')

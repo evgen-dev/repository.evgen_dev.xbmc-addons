@@ -288,7 +288,7 @@ class HttpData:
         try:
             for div in wrap.find_all('a'):
                 try:
-                    href = div.get('rel')
+                    href = div.get('data-rel')
                     name = div.get_text().strip()
                 except:
                     name = ''
@@ -307,7 +307,7 @@ class HttpData:
 
     def get_year(self, results):
         for res in results:
-            if(res.get('rel')[0] == 'year1'):
+            if(res.get('data-rel') == 'year1'):
                 return res.get_text().encode('utf-8')
         return 0
 
@@ -334,15 +334,15 @@ class HttpData:
 
             info['pagenum'] = int(wrap.find('b').get_text().encode('utf-8'))
             try:
-                info['maxpage'] = int(wrap.find('a', class_='last').get('rel')[0])
+                info['maxpage'] = int(wrap.find('a', class_='last').get('data-rel'))
             except:
                 try:
                     try:
                         info['maxpage'] = int(os.path.basename(wrap.find('a', class_='next').get('href')))
                     except:
-                        info['maxpage'] = wrap.find('a', class_='next').get('rel')
+                        info['maxpage'] = wrap.find('a', class_='next').get('data-rel')
                 except:
-                    info['maxpage'] = info['pagenum'];
+                    info['maxpage'] = info['pagenum']
         except:
             info['pagenum'] = 1
             info['maxpage'] = 1

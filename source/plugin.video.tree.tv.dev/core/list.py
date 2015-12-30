@@ -270,7 +270,7 @@ class BookmarkList(AbstactList):
     def show_movies(self, url, page):
         params = {}
         params['url'] = url
-        url = 'users/profile/bookmark?bookmark=%s&page=%s&_=1422563130401' % (url[0],str(page))
+        url = 'users/profile/bookmark?bookmark=%s&page=%s&_=1422563130401' % (url,str(page))
         md5 = hashlib.md5()
         md5.update(url)
         response = CACHE(str(md5.hexdigest()), self.get_movies, url, 0, 'book_mark_content', True)
