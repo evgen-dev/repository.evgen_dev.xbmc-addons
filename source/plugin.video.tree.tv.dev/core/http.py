@@ -72,10 +72,10 @@ class HttpData:
             url = SITE_URL+"/"+url.strip('/')
         print url
 
-        if(search != ''):
-            html = self.post(url, {'usersearch' : search})
-        else:
-            html = self.load(url)
+        #if(search != ''):
+            #html = self.post(url, {'usersearch' : search})
+        #else:
+        html = self.load(url)
 
         #print html.encode('utf-8')
 
@@ -85,10 +85,13 @@ class HttpData:
         soup = xbmcup.parser.html(self.strip_scripts(html))
         result['page'] = self.get_page(soup)
         center_menu = soup.find('div', class_=classname)
-
+        #print center_menu
         try:
             for div in center_menu.find_all('div', class_=itemclassname):
-                href = div.find('h2').find('a')
+                if(search != ''):
+                    href = None
+                else:
+                    href = div.find('h2').find('a')
                 try:
                     quality = div.find('span', class_='quality_film_title').get_text().strip()
                 except:
@@ -123,23 +126,35 @@ class HttpData:
                     img_src = img.get('src')
                     if(img_src.find('http') != -1):
                         movieposter = img_src
+                        if(search != ''):
+                            href = img.parent
                         break
+
+                if(href == None):
+                    raise
+
+                if(search != ''):
+                    name = href.find('img').get('alt').strip()
+                else:
+                    name = href.get_text().strip()
+
                 movie_url = href.get('href'),
                 movie_id = re.compile('/film/([\d]+)-', re.S).findall(movie_url[0])[0]
+
 
                 result['data'].append({
                         'url': movie_url,
                         'id': movie_id,
                         'quality': self.format_quality(quality),
                         'year': information,
-                        'name': href.get_text().strip(),
+                        'name': name,
                         'img': None if not movieposter else movieposter
                     })
 
-            print result['data']
+            #print result['data']
         except:
             print traceback.format_exc()
-        print nocache
+
         if(nocache):
             return None, result
         else:

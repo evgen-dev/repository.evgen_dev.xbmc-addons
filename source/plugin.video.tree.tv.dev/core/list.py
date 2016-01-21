@@ -128,20 +128,21 @@ class SearchList(AbstactList):
             page = 0
 
         try:
+            req_count = int(xbmcup.app.setting['search_history'])
+        except:
+            req_count = 0
+
+        if(req_count > 0):
+            SQL.set('create table if not exists search(id INTEGER PRIMARY KEY AUTOINCREMENT, value varchar(255) unique)')
+            history = SQL.get('SELECT id,value FROM search ORDER BY ID DESC')
+        else:
+            history = []
+            SQL.set('DELETE FROM search')
+
+        try:
             usersearch = params['usersearch']
             vsearch = params['vsearch']
         except:
-            try:
-                req_count = int(xbmcup.app.setting['search_history'])
-            except:
-                req_count = 0
-            history = []
-
-            if(req_count > 0):
-                SQL.set('create table if not exists search(id INTEGER PRIMARY KEY AUTOINCREMENT, value varchar(255) unique)')
-                history = SQL.get('SELECT id,value FROM search ORDER BY ID DESC')
-            else:
-                SQL.set('DELETE FROM search')
 
             if(len(history)):
                 history = list(history)
@@ -184,27 +185,27 @@ class SearchList(AbstactList):
         if(len(history) >= req_count):
             SQL.set('DELETE FROM search WHERE `id` = (SELECT MIN(id) FROM search)')
 
-        #page_url = "search/index/index/usersearch/"+params['usersearch']
-        page_url = "search"
+        page_url = "search/index/index/usersearch/%s/filter/all" % params['usersearch']
+        #page_url = "search"
         md5 = hashlib.md5()
-        #md5.update(page_url+'/page/'+str(page))
-        md5.update(params['usersearch'])
+        md5.update(page_url+'/page/'+str(page))
+        #md5.update(params['usersearch'])
         response = CACHE(str(md5.hexdigest()), self.get_movies, page_url, page, 'main_content_item', False, usersearch)
 
         self.item(u'[COLOR yellow]'+xbmcup.app.lang[30108]+'[/COLOR]', self.link('search'), folder=True, cover=cover.search)
         self.item('[COLOR blue]['+xbmcup.app.lang[30109]+': '+vsearch+'][/COLOR]',
                   self.link('null'), folder=False, cover=cover.info)
 
-        #if(response['page']['pagenum'] > 1):
-        #    params['page'] = page-1
-        #    self.item('[COLOR green]'+xbmcup.app.lang[30106]+'[/COLOR]', self.replace('search', params), cover=cover.prev)
-        #    params['page'] = page+1
+        if(response['page']['pagenum'] > 1):
+           params['page'] = page-1
+           self.item('[COLOR green]'+xbmcup.app.lang[30106]+'[/COLOR]', self.replace('search', params), cover=cover.prev)
+           params['page'] = page+1
 
         self.add_movies(response)
 
-        #params['page'] = page+1
-        #if(response['page']['maxpage'] >= response['page']['pagenum']+1):
-        #    self.item(u'[COLOR green]'+xbmcup.app.lang[30107]+'[/COLOR]', self.replace('search', params), cover=cover.next)
+        params['page'] = page+1
+        if(response['page']['maxpage'] >= response['page']['pagenum']+1):
+           self.item(u'[COLOR green]'+xbmcup.app.lang[30107]+'[/COLOR]', self.replace('search', params), cover=cover.next)
 
 
 class BookmarkList(AbstactList):
@@ -449,7 +450,8 @@ class QualityList(xbmcup.app.Handler, HttpData, Render):
 
 
     def add_playable_item(self, movie):
-        self.item(os.path.basename(str(movie)),
+        movie_name = movie.split('?')
+        self.item(os.path.basename(str(movie_name[0])),
                            movie,
                            folder=False,
                            media='video',
