@@ -97,6 +97,12 @@ class HttpData:
             for div in center_menu.find_all('article', class_=itemclassname):
                 href = div.find('div', class_='short')#.find('a')
 
+                not_movie = True
+                try:
+                    not_movie_test = div.find('span', class_='not-movie').get_text()
+                except:
+                    not_movie = False
+
                 try:
                     quality = div.find('div', class_='rip').find('span', class_='added-info').get_text().strip()
                 except:
@@ -127,6 +133,7 @@ class HttpData:
                 result['data'].append({
                         'url': movie_url[0],
                         'id': movie_id,
+                        'not_movie': not_movie,
                         'quality': self.format_quality(quality),
                         'year': information,
                         'name': href.find('div', class_='name').get_text().strip(),
@@ -179,119 +186,239 @@ class HttpData:
 
         html = html.encode('utf-8')
         soup = xbmcup.parser.html(self.strip_scripts(html))
-
         try:
-            js_string = self.decode_direct_media_url(re.compile("videoLink = '([^\']+)';", re.S).findall(html)[0].decode('string_escape').decode('utf-8'))
-        except:
-            js_string = self.decode_direct_media_url(re.compile("plLink = '([^\']+)';", re.S).findall(html)[0].decode('string_escape').decode('utf-8'))
+            try:
+                js_string = self.decode_direct_media_url(re.compile("videoLink = '([^\']+)';", re.S).findall(html)[0].decode('string_escape').decode('utf-8'))
+            except:
+                try:
+                    js_string = self.decode_direct_media_url(re.compile("plLink = '([^\']+)';", re.S).findall(html)[0].decode('string_escape').decode('utf-8'))
+                except:
+                    movieInfo['no_files'] = xbmcup.app.lang[34026].encode('utf8')
+                    raise
 
-        if(js_string.find('.txt') != -1):
-            playlist = self.decode_direct_media_url(self.load(js_string))
+            if(js_string.find('.txt') != -1):
+                playlist = self.decode_direct_media_url(self.load(js_string))
 
-            movies = json.loads(playlist, 'utf-8')
-            for season in movies['playlist']:
-                current_movie = {'folder_title' : season['comment'], 'movies': {}}
+                movies = json.loads(playlist, 'utf-8')
+                for season in movies['playlist']:
+                    current_movie = {'folder_title' : season['comment'], 'movies': {}}
 
-                for movie in season['playlist']:
-                    avail_quality = self.get_qualitys(movie['file'])
-                    for q in avail_quality:
-                        if(q == ''): continue
-                        direct_link = self.format_direct_link(movie['file'], q) if q != 0 else movie['file']
-                        try:
-                            current_movie['movies'][q].append(direct_link)
-                        except:
-                            current_movie['movies'][q] = []
-                            current_movie['movies'][q].append(direct_link)
+                    for movie in season['playlist']:
+                        avail_quality = self.get_qualitys(movie['file'])
+                        for q in avail_quality:
+                            if(q == ''): continue
+                            direct_link = self.format_direct_link(movie['file'], q) if q != 0 else movie['file']
+                            try:
+                                current_movie['movies'][q].append(direct_link)
+                            except:
+                                current_movie['movies'][q] = []
+                                current_movie['movies'][q].append(direct_link)
 
 
-                #for resulut in current_movie['movies']:
-                #    current_movie['movies'][resulut] = current_movie['movies'][resulut][0]
+                    #for resulut in current_movie['movies']:
+                    #    current_movie['movies'][resulut] = current_movie['movies'][resulut][0]
+
+                    movieInfo['movies'].append(current_movie)
+
+            elif(js_string.find('http://') != -1):
+                avail_quality = self.get_qualitys(js_string)
+                current_movie = {'folder_title' : '1', 'movies': {}}
+                for q in avail_quality:
+                    if(q == ''): continue
+                    direct_link = self.format_direct_link(js_string, q) if q != 0 else js_string
+                    try:
+                        current_movie['movies'][q].append(direct_link)
+                    except:
+                        current_movie['movies'][q] = []
+                        current_movie['movies'][q].append(direct_link)
 
                 movieInfo['movies'].append(current_movie)
 
-        elif(js_string.find('http://') != -1):
-            avail_quality = self.get_qualitys(js_string)
-            current_movie = {'folder_title' : '1', 'movies': {}}
-            for q in avail_quality:
-                if(q == ''): continue
-                direct_link = self.format_direct_link(js_string, q) if q != 0 else js_string
-                try:
-                    current_movie['movies'][q].append(direct_link)
-                except:
-                    current_movie['movies'][q] = []
-                    current_movie['movies'][q].append(direct_link)
+            movieInfo['title'] = soup.find('h1', class_='name').get_text()
+            try:
+                movieInfo['originaltitle'] = soup.find('div', class_='origin-name').get_text().strip()
+            except:
+                movieInfo['originaltitle'] = ''
 
-            movieInfo['movies'].append(current_movie)
+            try:
+                movieInfo['description'] = soup.find('div', class_='full-story').get_text().strip()
+            except:
+                movieInfo['description'] = ''
 
-        movieInfo['title'] = soup.find('h1', class_='name').get_text()
+            try:
+                movieInfo['fanart'] = SITE_URL+soup.find('div', class_='screen_bg').find('a').get('href')
+            except:
+                movieInfo['fanart'] = ''
+            try:
+                movieInfo['cover'] = SITE_URL+soup.find('img', class_='poster').get('src')
+            except:
+                movieInfo['cover'] = ''
+            try:
+                movieInfo['genres'] = []
+                genres = soup.find('div', class_='category').findAll('a')
+                for genre in genres:
+                   movieInfo['genres'].append(genre.get_text().strip())
+                movieInfo['genres'] = ' / '.join(movieInfo['genres']).encode('utf-8')
+            except:
+                movieInfo['genres'] = ''
+
+            try:
+                movieInfo['year'] = soup.find('div', class_='year').find('a').get_text()
+            except:
+                movieInfo['year'] = ''
+
+            try:
+                movieInfo['durarion'] = soup.find('div', class_='durarion').get('content')
+            except:
+                movieInfo['durarion'] = ''
+
+            try:
+                movieInfo['ratingValue'] = float(soup.find(attrs={'itemprop' : 'ratingValue'}).get_text())
+            except:
+                movieInfo['ratingValue'] = 0
+
+            try:
+                movieInfo['ratingCount'] = int(soup.find(attrs={'itemprop' : 'ratingCount'}).get_text())
+            except:
+                movieInfo['ratingCount'] = 0
+
+            try:
+                movieInfo['director'] = []
+                directors = soup.find('div', class_='directors').findAll('a')
+                for director in directors:
+                   movieInfo['director'].append(director.get_text().strip())
+                movieInfo['director'] = ', '.join(movieInfo['director']).encode('utf-8')
+            except:
+                movieInfo['director'] = ''
+        except:
+            pass
+        return movieInfo
+
+    def get_modal_info(self, url):
+        html = self.load(url)
+        movieInfo = {}
+        movieInfo['error'] = False
+        if not html:
+            movieInfo['error'] = True
+            return movieInfo
+
+        html = html.encode('utf-8')
+        soup = xbmcup.parser.html(self.strip_scripts(html))
+
+        try:
+            movieInfo['desc'] = soup.find('div', class_='full-story').get_text().strip()
+        except:
+            movieInfo['desc'] = ''
+
+        try:
+            movieInfo['title'] = soup.find('h1', class_='name').get_text()
+        except:
+            movieInfo['title'] = ''
+
         try:
             movieInfo['originaltitle'] = soup.find('div', class_='origin-name').get_text().strip()
         except:
             movieInfo['originaltitle'] = ''
 
-        try:
-            movieInfo['description'] = soup.find('div', class_='full-story').get_text().strip()
-        except:
-            movieInfo['description'] = ''
+        if(movieInfo['originaltitle'] != ''):
+             movieInfo['title'] = '%s / %s' % (movieInfo['title'],  movieInfo['originaltitle'])
 
         try:
-            movieInfo['fanart'] = SITE_URL+soup.find('div', class_='screen_bg').find('a').get('href')
+            movieInfo['poster'] = SITE_URL+soup.find('img', class_='poster').get('src')
         except:
-            movieInfo['fanart'] = ''
+            movieInfo['poster'] = ''
+
+        movieInfo['desc'] = ''
         try:
-            movieInfo['cover'] = SITE_URL+soup.find('img', class_='poster').get('src')
+            infos = soup.find('div', class_='full min').find_all('div', class_="item")
+            skip = True
+            for div in infos:
+                if(skip):
+                    skip = False
+                    continue
+                movieInfo['desc'] += self.format_desc_item(div.get_text().strip())+"\n"
         except:
-            movieInfo['cover'] = ''
-        try:
-            movieInfo['genres'] = []
-            genres = soup.find('div', class_='category').findAll('a')
-            for genre in genres:
-               movieInfo['genres'].append(genre.get_text().strip())
-            movieInfo['genres'] = ' / '.join(movieInfo['genres']).encode('utf-8')
-        except:
-            movieInfo['genres'] = ''
+           movieInfo['desc'] = traceback.format_exc()
 
         try:
-            movieInfo['year'] = soup.find('div', class_='year').find('a').get_text()
+            div = soup.find('div', class_='full-panel').find('span', class_='kinopoisk')
+            rvalue = div.find('div', attrs={'itemprop' : 'ratingValue'}).get_text().strip()
+            rcount = div.find('div', attrs={'itemprop' : 'ratingCount'}).get_text().strip()
+            kp = xbmcup.app.lang[34029] % (self.format_rating(rvalue), rvalue, rcount)
+            movieInfo['desc'] += kp+"\n"
         except:
-            movieInfo['year'] = ''
+            pass
 
         try:
-            movieInfo['durarion'] = soup.find('div', class_='durarion').get('content')
+            div = soup.find('div', class_='full-panel').find('span', class_='imdb').find_all('div')
+            rvalue = div[0].get_text().strip()
+            rcount = div[1].get_text().strip()
+            kp = xbmcup.app.lang[34030] % (self.format_rating(rvalue), rvalue, rcount)
+            movieInfo['desc'] += kp+"\n"
         except:
-            movieInfo['durarion'] = ''
+            pass
 
         try:
-            movieInfo['ratingValue'] = float(soup.find(attrs={'itemprop' : 'ratingValue'}).get_text())
+            desc = soup.find('div', class_='full-story').get_text().strip()
+            movieInfo['desc'] += '\n[COLOR blue]%s[/COLOR]\n%s' % (xbmcup.app.lang[34027], desc)
         except:
-            movieInfo['ratingValue'] = 0
+            movieInfo['desc'] = traceback.format_exc()
 
         try:
-            movieInfo['ratingCount'] = int(soup.find(attrs={'itemprop' : 'ratingCount'}).get_text())
+            movieInfo['trailer'] = soup.find('li', attrs={'data-id' : "trailers"}).find('a').get('href')
         except:
-            movieInfo['ratingCount'] = 0
+            movieInfo['trailer'] = False
 
-        try:
-            movieInfo['director'] = []
-            directors = soup.find('div', class_='directors').findAll('a')
-            for director in directors:
-               movieInfo['director'].append(director.get_text().strip())
-            movieInfo['director'] = ', '.join(movieInfo['director']).encode('utf-8')
-        except:
-            movieInfo['director'] = ''
-    # else:
-    #     try:
-    #         no_files = soup.find('div', class_='no_files').get_text().strip().encode('utf-8')
-    #     except:
-    #         no_files = ''
-        #no_files = ''
-        #movieInfo['no_files'] = no_files
         return movieInfo
+
+    def my_int(self, str):
+        if(str == ''):
+            return 0
+        return int(str)
+
+    def get_trailer(self, url):
+        progress = xbmcgui.DialogProgress()
+        progress.create(xbmcup.app.addon['name'])
+        progress.update(0)
+        html = self.load(url)
+        movieInfo = {}
+        movieInfo['error'] = False
+        if not html:
+            xbmcup.gui.message(xbmcup.app.lang[34031].encode('utf8'))
+            progress.update(0)
+            progress.close()
+            return False
+
+        progress.update(50)
+        html = html.encode('utf-8')
+        soup = xbmcup.parser.html(self.strip_scripts(html))
+
+        link = self.decode_direct_media_url(soup.find('input', id='video-link').get('value'))
+        avail_quality = max(map(self.my_int, self.get_qualitys(link)))
+        progress.update(100)
+        progress.close()
+        return self.format_direct_link(link, str(avail_quality))
+
+    def format_desc_item(self, text):
+        return re.compile(r'^([^:]+:)', re.S).sub('[COLOR blue]\\1[/COLOR] ', text)
+
 
     def strip_scripts(self, html):
         #удаляет все теги <script></script> и их содержимое
         #сделал для того, что бы html parser не ломал голову на тегах в js
         return re.compile(r'<script[^>]*>(.*?)</script>', re.S).sub('', html)
+
+    def format_rating(self, rating):
+        rating = float(rating)
+        if(rating == 0):
+            return 'white'
+        elif(rating > 7):
+            return 'ff59C641'
+        elif(rating > 4):
+            return 'ffFFB119'
+        else:
+            return 'ffDE4B64'
+
 
     def format_quality(self, quality):
         if(quality == ''): return ''

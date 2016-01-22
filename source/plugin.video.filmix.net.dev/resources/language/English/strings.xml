@@ -84,5 +84,13 @@
     <string id="34023">Количество последних поисковых запросов</string>
     <string id="34024">Выбирать равное или меньшее качество</string>
 	<string id="34025">FLV</string>
+	<string id="34026">Видеофайлы отсутствуют</string>
+	<string id="34027">Описание:</string>
+	<string id="34028">[COLOR red][Трейлер][/COLOR]</string>
+	<string id="34029">[COLOR blue]Кинопоиск:[/COLOR] [COLOR %s]%s[/COLOR] (%s)</string>
+	<string id="34030">[COLOR blue]IMDB:[/COLOR] [COLOR %s]%s[/COLOR] (%s)</string>
+	<string id="34031">Не удалось загрузить информацию</string>
+	<string id="34032">Не удалось найти ссылку на трейлер</string>
+	<string id="34033">Информация о фильме</string>
 
 </strings>

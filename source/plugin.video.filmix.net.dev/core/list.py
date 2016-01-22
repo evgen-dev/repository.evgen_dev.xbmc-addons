@@ -21,12 +21,17 @@ class AbstactList(xbmcup.app.Handler, HttpData, Render):
         if(len(response['data']) > 0):
             for movie in response['data']:
                 menu = []
+                menu.append([xbmcup.app.lang[34033], self.link('context', {'action': 'show_movieinfo', 'movie' : movie})])
                 if(self.__class__.__name__ != 'BookmarkList'):
                     menu.append([xbmcup.app.lang[30147], self.link('context', {'action': 'add_bookmark', 'id' : movie['id']})])
                 else:
                     menu.append([xbmcup.app.lang[30148], self.link('context', {'action': 'del_bookmark', 'id' : movie['id']})])
 
-                self.item(movie['name']+' '+movie['year']+' '+movie['quality'],
+                not_movie = ''
+                if(movie['not_movie'] == True):
+                    not_movie = xbmcup.app.lang[34028]+' '
+
+                self.item(not_movie+movie['name']+' '+movie['year']+' '+movie['quality'],
                           self.link('quality-list', {'movie_page' : movie['url'], 'cover' : movie['img']}),
                           folder=True, cover=movie['img'], menu=menu)
         else:
