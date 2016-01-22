@@ -18,7 +18,10 @@ class HttpData:
         try:
             self.auth = Auth()
             self.cookie = self.auth.get_cookies()
-            response = xbmcup.net.http.get(url, cookies=self.cookie)
+            headers = {
+                'Referer' : url
+            }
+            response = xbmcup.net.http.get(url, cookies=self.cookie, headers=headers)
         except xbmcup.net.http.exceptions.RequestException:
             print traceback.format_exc()
             return None
@@ -37,7 +40,10 @@ class HttpData:
         try:
             self.auth = Auth()
             self.cookie = self.auth.get_cookies()
-            response = xbmcup.net.http.post(url, data, cookies=self.cookie)
+            headers = {
+                'Referer' : url
+            }
+            response = xbmcup.net.http.post(url, data, cookies=self.cookie, headers=headers)
         except xbmcup.net.http.exceptions.RequestException:
             print traceback.format_exc()
             return None
@@ -54,7 +60,8 @@ class HttpData:
             self.auth = Auth()
             self.cookie = self.auth.get_cookies()
             headers = {
-                'X-Requested-With' : 'XMLHttpRequest'
+                'X-Requested-With'  : 'XMLHttpRequest',
+                'Referer'           : SITE_URL
             }
             response = xbmcup.net.http.get(url, cookies=self.cookie, headers=headers)
             print url
@@ -72,10 +79,10 @@ class HttpData:
             url = SITE_URL+"/"+url.strip('/')
         print url
 
-        #if(search != ''):
-            #html = self.post(url, {'usersearch' : search})
-        #else:
-        html = self.load(url)
+        if(search != '' and page == 0):
+            html = self.post(url, {'usersearch' : search, 'filter' : 'all'})
+        else:
+            html = self.load(url)
 
         #print html.encode('utf-8')
 

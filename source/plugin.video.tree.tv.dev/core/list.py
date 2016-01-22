@@ -185,8 +185,10 @@ class SearchList(AbstactList):
         if(len(history) >= req_count):
             SQL.set('DELETE FROM search WHERE `id` = (SELECT MIN(id) FROM search)')
 
-        page_url = "search/index/index/usersearch/%s/filter/all" % params['usersearch']
-        #page_url = "search"
+        if(page > 0):
+            page_url = "search/index/index/usersearch/%s/filter/all" % params['usersearch']
+        else:
+            page_url = "search"
         md5 = hashlib.md5()
         md5.update(page_url+'/page/'+str(page))
         #md5.update(params['usersearch'])
