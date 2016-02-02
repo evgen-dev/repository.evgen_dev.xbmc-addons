@@ -68,7 +68,8 @@ class CollectionList(AbstactList):
             page = 0
 
         md5 = hashlib.md5()
-        md5.update(url)
+        md5.update(url+'page/'+str(page))
+
         response = CACHE(str(md5.hexdigest()), self.get_movies, url, page, 'main_content_item', False, "", "item_wrap")
 
         if(response['page']['pagenum'] > 1):
@@ -190,7 +191,7 @@ class SearchList(AbstactList):
         else:
             page_url = "search"
         md5 = hashlib.md5()
-        md5.update(page_url+'/page/'+str(page))
+        md5.update(params['usersearch']+'/search/page/'+str(page))
         #md5.update(params['usersearch'])
         response = CACHE(str(md5.hexdigest()), self.get_movies, page_url, page, 'main_content_item', False, usersearch)
 
