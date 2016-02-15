@@ -185,7 +185,7 @@ class HttpData:
         html = html.encode('utf-8')
         soup = xbmcup.parser.html(self.strip_scripts(html))
 
-        js_string = re.compile("'source' : \$\.parseJSON\('([^\']+)'\)", re.S).findall(html)[0].decode('string_escape').decode('utf-8')
+        js_string = re.compile("'source'\s*:\s*\$\.parseJSON\('([^\']+)'\)", re.S).findall(html)[0].decode('string_escape').decode('utf-8')
         movies = json.loads(js_string, 'utf-8')
         #print movies
         if(movies != None and len(movies) > 0):
