@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8" standalone="yes"?>
 	<addon id="plugin.video.filmix.net.dev"
        name="Filmix.Net"
-       version="0.0.4"
+       version="0.0.5"
        provider-name="Evgenii Devisok aka evgen_dev">
 	<requires>
 		<import addon="xbmc.python" version="2.1.0"/>

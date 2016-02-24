@@ -308,7 +308,7 @@ class QualityList(xbmcup.app.Handler, HttpData, Render):
             movies = self.movieInfo['movies'][self.def_dir]['movies'][str(self.params['quality_dir'])]
         else:
             show_first_quality = True
-            movies = self.movieInfo['movies'][0]['movies']
+            movies = self.movieInfo['movies'][self.def_dir]['movies']
 
         if(show_first_quality):
             for quality in movies:
