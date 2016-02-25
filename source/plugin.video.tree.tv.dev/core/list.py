@@ -74,14 +74,14 @@ class CollectionList(AbstactList):
 
         if(response['page']['pagenum'] > 1):
             params['page'] = page-1
-            self.item('[COLOR green]'+xbmcup.app.lang[30106]+'[/COLOR]', self.replace('collection', params), cover=cover.prev)
+            self.item('[COLOR green]'+xbmcup.app.lang[30106]+'[/COLOR]', self.replace('collection', params), folder=True, cover=cover.prev)
             params['page'] = page+1
 
         self.add_movies(response)
 
         params['page'] = page+1
         if(response['page']['maxpage'] >= response['page']['pagenum']+1):
-            self.item('[COLOR green]'+xbmcup.app.lang[30107]+'[/COLOR]', self.replace('collection', params), cover=cover.next)
+            self.item('[COLOR green]'+xbmcup.app.lang[30107]+'[/COLOR]', self.replace('collection', params), folder=True, cover=cover.next)
 
 
 class MovieList(AbstactList):
@@ -106,14 +106,14 @@ class MovieList(AbstactList):
         response = CACHE(str(md5.hexdigest()), self.get_movies, page_url, page)
         if(response['page']['pagenum'] > 1):
             params['page'] = page-1
-            self.item('[COLOR green]'+xbmcup.app.lang[30106]+'[/COLOR]', self.replace('list', params), cover=cover.prev)
+            self.item('[COLOR green]'+xbmcup.app.lang[30106]+'[/COLOR]', self.replace('list', params), folder=True, cover=cover.prev)
             params['page'] = page+1
 
         self.add_movies(response)
 
         params['page'] = page+1
         if(response['page']['maxpage'] >= response['page']['pagenum']+1):
-            self.item('[COLOR green]'+xbmcup.app.lang[30107]+'[/COLOR]', self.replace('list', params), cover=cover.next)
+            self.item('[COLOR green]'+xbmcup.app.lang[30107]+'[/COLOR]', self.replace('list', params), folder=True, cover=cover.next)
 
 class SearchList(AbstactList):
     def handle(self):
@@ -201,14 +201,14 @@ class SearchList(AbstactList):
 
         if(response['page']['pagenum'] > 1):
            params['page'] = page-1
-           self.item('[COLOR green]'+xbmcup.app.lang[30106]+'[/COLOR]', self.replace('search', params), cover=cover.prev)
+           self.item('[COLOR green]'+xbmcup.app.lang[30106]+'[/COLOR]', self.replace('search', params), folder=True, cover=cover.prev)
            params['page'] = page+1
 
         self.add_movies(response)
 
         params['page'] = page+1
         if(response['page']['maxpage'] >= response['page']['pagenum']+1):
-           self.item(u'[COLOR green]'+xbmcup.app.lang[30107]+'[/COLOR]', self.replace('search', params), cover=cover.next)
+           self.item(u'[COLOR green]'+xbmcup.app.lang[30107]+'[/COLOR]', self.replace('search', params), folder=True, cover=cover.next)
 
 
 class BookmarkList(AbstactList):
@@ -281,14 +281,14 @@ class BookmarkList(AbstactList):
 
         if(page > 1):
             params['page'] = page-1
-            self.item('[COLOR green]'+xbmcup.app.lang[30106]+'[/COLOR]', self.replace('bookmarks', params), cover=cover.prev)
+            self.item('[COLOR green]'+xbmcup.app.lang[30106]+'[/COLOR]', self.replace('bookmarks', params), folder=True, cover=cover.prev)
             params['page'] = page+1
 
         self.add_movies(response, 30152)
 
         params['page'] = page+1
         if(response['page']['maxpage'] >= response['page']['pagenum']+1):
-            self.item(u'[COLOR green]'+xbmcup.app.lang[30107]+'[/COLOR]', self.replace('bookmarks', params), cover=cover.next)
+            self.item(u'[COLOR green]'+xbmcup.app.lang[30107]+'[/COLOR]', self.replace('bookmarks', params), folder=True, cover=cover.next)
 
     def add_dir(self):
         keyboard = xbmc.Keyboard()
