@@ -4,7 +4,7 @@ import os, re, sys, json, urllib, hashlib, traceback,base64,math
 import xbmcup.app, xbmcup.db, xbmcup.system, xbmcup.net, xbmcup.parser, xbmcup.gui
 import xbmc, cover, xbmcplugin, xbmcgui
 from common import Render
-from auth import Auth
+# from auth import Auth
 from defines import *
 
 try:
@@ -16,16 +16,16 @@ class HttpData:
 
     def load(self, url):
         try:
-            self.auth = Auth()
-            self.cookie = self.auth.get_cookies()
-            response = xbmcup.net.http.get(url, cookies=self.cookie)
+            # self.auth = Auth()
+            # self.cookie = self.auth.get_cookies()
+            response = xbmcup.net.http.get(url)
         except xbmcup.net.http.exceptions.RequestException:
             print traceback.format_exc()
             return None
         else:
             if(response.status_code == 200):
-                if(self.auth.check_auth(response.text) == False):
-                    self.auth.autorize()
+                # if(self.auth.check_auth(response.text) == False):
+                #     self.auth.autorize()
                 return response.text
             return None
 
@@ -35,31 +35,31 @@ class HttpData:
         except:
             data = {}
         try:
-            self.auth = Auth()
-            self.cookie = self.auth.get_cookies()
-            response = xbmcup.net.http.post(url, data, cookies=self.cookie)
+            # self.auth = Auth()
+            # self.cookie = self.auth.get_cookies()
+            response = xbmcup.net.http.post(url, data)
         except xbmcup.net.http.exceptions.RequestException:
             print traceback.format_exc()
             return None
         else:
             if(response.status_code == 200):
-                if(self.auth.check_auth(response.text) == False):
-                    self.auth.autorize()
+                # if(self.auth.check_auth(response.text) == False):
+                #     self.auth.autorize()
                 return response.text
             return None
 
 
     def ajax(self, url, data={}):
         try:
-            self.auth = Auth()
-            self.cookie = self.auth.get_cookies()
+            # self.auth = Auth()
+            # self.cookie = self.auth.get_cookies()
             headers = {
                 'X-Requested-With' : 'XMLHttpRequest'
             }
             if(len(data) > 0):
-                response = xbmcup.net.http.post(url, data, cookies=self.cookie, headers=headers)
+                response = xbmcup.net.http.post(url, data, headers=headers)
             else:
-                response = xbmcup.net.http.get(url, cookies=self.cookie, headers=headers)
+                response = xbmcup.net.http.get(url, headers=headers)
         except xbmcup.net.http.exceptions.RequestException:
             print traceback.format_exc()
             return None
@@ -83,7 +83,7 @@ class HttpData:
             return None, {'page': {'pagenum' : 0, 'maxpage' : 0}, 'data': []}
         result = {'page': {}, 'data': []}
         soup = xbmcup.parser.html(self.strip_scripts(html))
-        print soup
+        # print soup
         result['page'] = self.get_page(soup)
         if(idname != ''):
             center_menu = soup.find('ul', class_=idname)
@@ -122,7 +122,7 @@ class HttpData:
                         rating = div.find('span', class_='results-item-rating').find('span').get_text().strip()
                     except:
                         rating = 0
-
+                    # name= ''
                     name = href.find('div', class_='results-item-title').get_text().strip()
 
                 information = ''
@@ -177,11 +177,11 @@ class HttpData:
                 current_movie['1080'] = []
                 current_movie['1080'].append([video_id, name])
 
-            try:
-                current_movie['480'].append([video_id, name])
-            except:
-                current_movie['480'] = []
-                current_movie['480'].append([video_id, name])
+            # try:
+            #     current_movie['480'].append([video_id, name])
+            # except:
+            #     current_movie['480'] = []
+            #     current_movie['480'].append([video_id, name])
 
         if(issoup):
             return current_movie
@@ -248,10 +248,10 @@ class HttpData:
                 }
 
             current_movie['movies']['1080'] = []
-            current_movie['movies']['480'] = []
+            # current_movie['movies']['480'] = []
 
             current_movie['movies']['1080'].append([movies['url']])
-            current_movie['movies']['480'].append([movies['lqUrl']])
+            # current_movie['movies']['480'].append([movies['lqUrl']])
 
             movieInfo['movies'].append(current_movie)
 
@@ -274,7 +274,7 @@ class HttpData:
 
         try:
             cover = soup.find('div', class_='entity-desc-poster-img').get('style')
-            prog = re.compile('(http://[^\)]+)', re.I)
+            prog = re.compile('(https?://[^\)]+)', re.I)
             result = prog.findall(cover)
             movieInfo['cover'] = result[0]
         except:
@@ -317,7 +317,6 @@ class HttpData:
             movieInfo['director'] = ', '.join(movieInfo['director']).encode('utf-8')
         except:
             movieInfo['director'] = ''
-
         return movieInfo
 
 
@@ -361,10 +360,10 @@ class ResolveLink(xbmcup.app.Handler, HttpData, Render):
         movies = json.loads(js_string, 'utf-8')
         xbmcup.gui.progress.close()
         try:
-            if(is_hd and movies['url']):
-                return movies['url']
-            else:
-                return movies['lqUrl']
+            # if(is_hd and movies['url']):
+            return movies['url']
+            # else:
+            #     return movies['lqUrl']
         except:
             xbmcup.gui.message(movies['error'].encode('utf8'))
             return None

@@ -51,14 +51,14 @@ class MovieList(AbstactList):
 
         if(response['page']['pagenum'] > 1):
             params['page'] = page-1
-            self.item('[COLOR green]'+xbmcup.app.lang[30106]+'[/COLOR]', self.replace('list', params), cover=cover.prev)
+            self.item('[COLOR green]'+xbmcup.app.lang[30106]+'[/COLOR]', self.replace('list', params), folder=True, cover=cover.prev)
             params['page'] = page+1
 
         self.add_movies(response)
 
         params['page'] = page+1
         if(response['page']['maxpage'] >= response['page']['pagenum']+1):
-            self.item('[COLOR green]'+xbmcup.app.lang[30107]+'[/COLOR]', self.replace('list', params), cover=cover.next)
+            self.item('[COLOR green]'+xbmcup.app.lang[30107]+'[/COLOR]', self.replace('list', params), folder=True, cover=cover.next)
 
 class SearchList(AbstactList):
     def handle(self):
@@ -144,14 +144,14 @@ class SearchList(AbstactList):
 
         if(response['page']['pagenum'] > 1):
             params['page'] = page-1
-            self.item('[COLOR green]'+xbmcup.app.lang[30106]+'[/COLOR]', self.replace('search', params), cover=cover.prev)
+            self.item('[COLOR green]'+xbmcup.app.lang[30106]+'[/COLOR]', self.replace('search', params), folder=True, cover=cover.prev)
             params['page'] = page+1
 
         self.add_movies(response)
 
         params['page'] = page+1
         if(response['page']['maxpage'] >= response['page']['pagenum']+1):
-            self.item(u'[COLOR green]'+xbmcup.app.lang[30107]+'[/COLOR]', self.replace('search', params), cover=cover.next)
+            self.item(u'[COLOR green]'+xbmcup.app.lang[30107]+'[/COLOR]', self.replace('search', params), folder=True, cover=cover.next)
 
 class AbstractViewer(AbstactList):
     def get_info(self):
@@ -212,8 +212,8 @@ class QualityList(AbstractViewer):
         except:
             self.params['sub_dir'] = None
 
-        quality_settings = int(xbmcup.app.setting['quality'])
-        default_quality = QUALITYS[quality_settings]
+        #quality_settings = int(xbmcup.app.setting['quality'])
+        #default_quality = QUALITYS[quality_settings]
 
         try:
             self.params['quality_dir'] = int(self.params['quality_dir'])
@@ -225,27 +225,27 @@ class QualityList(AbstractViewer):
         else:
             self.def_dir=  self.params['sub_dir']
 
-        if(default_quality != None and self.params['quality_dir'] == None):
-            try:
-                test = self.movieInfo['movies'][self.def_dir]['movies'][default_quality]
-                self.params['quality_dir'] = str(default_quality)
-            except:
-                if(xbmcup.app.setting['lowest_quality'] == 'true'):
-                    quality_settings -= 1
-                    if(quality_settings > 1):
-                        try:
-                            default_quality = str(QUALITYS[quality_settings])
-                            test = self.movieInfo['movies'][self.def_dir]['movies'][default_quality]
-                            self.params['quality_dir'] = default_quality
-                        except:
-                            quality_settings -= 1
-                            if(quality_settings > 1):
-                                try:
-                                    default_quality = str(QUALITYS[quality_settings])
-                                    test = self.movieInfo['movies'][self.def_dir]['movies'][default_quality]
-                                    self.params['quality_dir'] = default_quality
-                                except:
-                                    pass
+        # if(default_quality != None and self.params['quality_dir'] == None):
+        #     try:
+        #         test = self.movieInfo['movies'][self.def_dir]['movies'][default_quality]
+        #         self.params['quality_dir'] = str(default_quality)
+        #     except:
+        #         if(xbmcup.app.setting['lowest_quality'] == 'true'):
+        #             quality_settings -= 1
+        #             if(quality_settings > 1):
+        #                 try:
+        #                     default_quality = str(QUALITYS[quality_settings])
+        #                     test = self.movieInfo['movies'][self.def_dir]['movies'][default_quality]
+        #                     self.params['quality_dir'] = default_quality
+        #                 except:
+        #                     quality_settings -= 1
+        #                     if(quality_settings > 1):
+        #                         try:
+        #                             default_quality = str(QUALITYS[quality_settings])
+        #                             test = self.movieInfo['movies'][self.def_dir]['movies'][default_quality]
+        #                             self.params['quality_dir'] = default_quality
+        #                         except:
+        #                             pass
 
 
         #если на сайте несколько папок с файлами
@@ -284,18 +284,18 @@ class QualityList(AbstractViewer):
 
     def show_episodes(self):
         show_first_quality = False
-
         if(self.movieInfo['movies'][self.def_dir]['isSerial']):
             curl = self.movieInfo['movies'][self.def_dir]['folder_url']
             md5 = hashlib.md5()
             md5.update(curl)
             self.movieInfo['movies'][self.def_dir]['movies'] = CACHE(str(md5.hexdigest()), self.get_season_movies, curl)
+            print self.movieInfo['movies'][self.def_dir]['movies']
 
         if(self.params['quality_dir']):
             movies = self.movieInfo['movies'][self.def_dir]['movies'][str(self.params['quality_dir'])]
         else:
             show_first_quality = True
-            movies = self.movieInfo['movies'][0]['movies']
+            movies = self.movieInfo['movies'][self.def_dir]['movies']
 
         if(show_first_quality):
             for quality in movies:

@@ -9,9 +9,9 @@
 		<setting label="31010" type="action" action="RunScript($CWD/settings.py, clear_cache)"/>
 		<setting id="bookmark_dir" type="bool" visible="false" label="" default="0" />
 		
-		<setting label="31015" type="lsep"/>
+		<!--setting label="31015" type="lsep"/>
 		<setting label="31016" type="enum" id="quality" default="0" lvalues="34017|34018|34019|34020|34021"/>
-		<setting id="lowest_quality" type="bool" enable="!eq(-1,0)+!eq(-1,1)" label="34024" default="0" />
+		<setting id="lowest_quality" type="bool" enable="!eq(-1,0)+!eq(-1,1)" label="34024" default="0" /-->
 		
 		<setting label="34022" type="lsep"/>
 		<setting id="search_history" type="number" label="34023" default="20" />

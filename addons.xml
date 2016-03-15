@@ -70,7 +70,7 @@
 
 	<addon id="plugin.video.zona.mobi.dev"
        name="Zona.Mobi"
-       version="0.0.1"
+       version="0.0.2"
        provider-name="Evgenii Devisok aka evgen_dev">
 	<requires>
 		<import addon="xbmc.python" version="2.1.0"/>
@@ -82,7 +82,7 @@
 	<extension point="xbmc.addon.metadata">
 		<summary>Zona.Mobi</summary>
 		<description>
-			 <!-- Filmix.Net - Вашему вниманию полнометражное кино и телесериалы, мультфильмы, трейлеры. -->
+			 Zona.Mobi - Полнометражное кино и телесериалы
 		</description>
 		<platform>all</platform>
 		<license>GNU GENERAL PUBLIC LICENSE. Version 2, June 1991</license>

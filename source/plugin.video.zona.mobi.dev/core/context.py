@@ -4,7 +4,6 @@ import os, re, sys, json, urllib, hashlib, traceback
 import xbmcup.app, xbmcup.db, xbmcup.system, xbmcup.net, xbmcup.parser, xbmcup.gui
 import xbmc, cover, xbmcplugin, xbmcgui
 from http import HttpData
-from auth import Auth
 from common import Render
 from defines import *
 
