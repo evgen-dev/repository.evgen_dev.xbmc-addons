@@ -51,19 +51,19 @@ class MovieList(AbstactList):
         page_url = "/"+params['dir']+"/"
 
         md5 = hashlib.md5()
-        md5.update(page_url+'/page/'+str(page))
+        md5.update(page_url+'/page/'+str(page)+'?v='+xbmcup.app.addon['version'])
 
         response = CACHE(str(md5.hexdigest()), self.get_movies, page_url, page)
         if(response['page']['pagenum'] > 1):
             params['page'] = page-1
-            self.item('[COLOR green]'+xbmcup.app.lang[30106]+'[/COLOR]', self.replace('list', params), cover=cover.prev)
+            self.item('[COLOR green]'+xbmcup.app.lang[30106]+'[/COLOR]', self.replace('list', params), cover=cover.prev, folder=True)
             params['page'] = page+1
 
         self.add_movies(response)
 
         params['page'] = page+1
         if(response['page']['maxpage'] >= response['page']['pagenum']+1):
-            self.item('[COLOR green]'+xbmcup.app.lang[30107]+'[/COLOR]', self.replace('list', params), cover=cover.next)
+            self.item('[COLOR green]'+xbmcup.app.lang[30107]+'[/COLOR]', self.replace('list', params), cover=cover.next, folder=True)
 
 class SearchList(AbstactList):
     def handle(self):
@@ -140,7 +140,7 @@ class SearchList(AbstactList):
         page_url = "/engine/ajax/sphinx_search.php?story=%s&search_start=%s" % (params['usersearch'], page+1)
         md5 = hashlib.md5()
         #md5.update(page_url+'/page/'+str(page))
-        md5.update(params['usersearch'])
+        md5.update(params['usersearch']+'?v='+xbmcup.app.addon['version'])
         response = CACHE(str(md5.hexdigest()), self.get_movies, page_url, page, '', False, usersearch)
 
         self.item(u'[COLOR yellow]'+xbmcup.app.lang[30108]+'[/COLOR]', self.link('search'), folder=True, cover=cover.search)
@@ -149,14 +149,14 @@ class SearchList(AbstactList):
 
         if(response['page']['pagenum'] > 1):
             params['page'] = page-1
-            self.item('[COLOR green]'+xbmcup.app.lang[30106]+'[/COLOR]', self.replace('search', params), cover=cover.prev)
+            self.item('[COLOR green]'+xbmcup.app.lang[30106]+'[/COLOR]', self.replace('search', params), cover=cover.prev, folder=True)
             params['page'] = page+1
 
         self.add_movies(response)
 
         params['page'] = page+1
         if(response['page']['maxpage'] >= response['page']['pagenum']+1):
-            self.item(u'[COLOR green]'+xbmcup.app.lang[30107]+'[/COLOR]', self.replace('search', params), cover=cover.next)
+            self.item(u'[COLOR green]'+xbmcup.app.lang[30107]+'[/COLOR]', self.replace('search', params), cover=cover.next, folder=True)
 
 
 class BookmarkList(AbstactList):
@@ -193,19 +193,19 @@ class BookmarkList(AbstactList):
         params['url'] = url
         url = 'favorites'
         md5 = hashlib.md5()
-        md5.update(url)
+        md5.update(url+'?v='+xbmcup.app.addon['version'])
         response = CACHE(str(md5.hexdigest()), self.get_movies, url, page, 'dle-content', True)
 
         if(page > 0):
             params['page'] = page-1
-            self.item('[COLOR green]'+xbmcup.app.lang[30106]+'[/COLOR]', self.replace('bookmarks', params), cover=cover.prev)
+            self.item('[COLOR green]'+xbmcup.app.lang[30106]+'[/COLOR]', self.replace('bookmarks', params), cover=cover.prev, folder=True)
             params['page'] = page+1
 
         self.add_movies(response, 30152)
 
         params['page'] = page+1
         if(response['page']['maxpage'] >= response['page']['pagenum']+1):
-            self.item(u'[COLOR green]'+xbmcup.app.lang[30107]+'[/COLOR]', self.replace('bookmarks', params), cover=cover.next)
+            self.item(u'[COLOR green]'+xbmcup.app.lang[30107]+'[/COLOR]', self.replace('bookmarks', params), cover=cover.next, folder=True)
 
 
 

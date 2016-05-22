@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-import os, re, sys, hashlib, traceback, datetime
+import os, re, sys, hashlib, traceback, datetime, json
 import xbmcup.app, xbmcup.db, xbmcup.system, xbmcup.net, xbmcup.parser, xbmcup.gui
 import xbmc, cover, xbmcplugin, xbmcgui
 from common import Render
@@ -14,57 +14,61 @@ CACHE = xbmcup.db.Cache(xbmcup.system.fs('sandbox://'+CACHE_DATABASE))
 CACHE_TIME = 60*60*24*7
 
 class FilterData(HttpData):
+    #translation
+    def clear_filter_key(self, key, newkey):
+        return key.replace('f', newkey).encode('utf-8').decode('utf-8')
 
     def get_genre_list(self):
-        html = self.load('%s/search' % SITE_URL)
+        html = self.ajax('%s/engine/ajax/get_filter.php' % SITE_URL, {'scope':'search', 'type':'categories'})
         result = {'name' : [xbmcup.app.lang[30135]], 'href': ['']}
         if not html:
             return None, result
-        soup = xbmcup.parser.html(self.strip_scripts(html))
-        genres = soup.find('section', id='items-more-ganres').find_all('span', class_='item')
+
+        genres = json.loads(html, 'utf-8')
+
         for genre in genres:
-            result['name'].append(genre.get_text().strip().encode('utf-8').decode('utf-8'))
-            result['href'].append(genre.get('data-scope')[0].encode('utf-8').decode('utf-8')+genre.get('data-value').encode('utf-8').decode('utf-8'))
-        print result
+            result['name'].append(genres[genre].strip().encode('utf-8').decode('utf-8'))
+            result['href'].append(self.clear_filter_key(genre, 'g'))
         return CACHE_TIME, result
 
     def get_quality_list(self):
-        html = self.load('%s/search' % SITE_URL)
+        html = self.ajax('%s/engine/ajax/get_filter.php' % SITE_URL, {'scope':'search', 'type':'rip'})
         result = {'name' : [xbmcup.app.lang[30136]], 'href': ['']}
         if not html:
             return None, result
-        soup = xbmcup.parser.html(self.strip_scripts(html))
-        genres = soup.find('section', id='items-more-rip').find_all('span', class_='item')
+
+        genres = json.loads(html, 'utf-8')
+
         for genre in genres:
-            result['name'].append(genre.get_text().strip().encode('utf-8').decode('utf-8'))
-            result['href'].append(genre.get('data-scope')[0].encode('utf-8').decode('utf-8')+genre.get('data-value').encode('utf-8').decode('utf-8'))
-        print result
+            result['name'].append(genres[genre].strip().encode('utf-8').decode('utf-8'))
+            result['href'].append(self.clear_filter_key(genre, 'q'))
         return CACHE_TIME, result
 
     def get_country_list(self):
-        html = self.load('%s/search' % SITE_URL)
+        html = self.ajax('%s/engine/ajax/get_filter.php' % SITE_URL, {'scope':'search', 'type':'countries'})
         result = {'name' : [xbmcup.app.lang[30136]], 'href': ['']}
         if not html:
             return None, result
-        soup = xbmcup.parser.html(self.strip_scripts(html))
-        genres = soup.find('section', id='items-more-country').find_all('span', class_='item')
+
+        genres = json.loads(html, 'utf-8')
+
         for genre in genres:
-            result['name'].append(genre.get_text().strip().encode('utf-8').decode('utf-8'))
-            result['href'].append(genre.get('data-scope')[0].encode('utf-8').decode('utf-8')+genre.get('data-value').encode('utf-8').decode('utf-8'))
-        print result
+            result['name'].append(genres[genre].strip().encode('utf-8').decode('utf-8'))
+            result['href'].append(self.clear_filter_key(genre, 'c'))
+        #print result
         return CACHE_TIME, result
 
     def get_awards_list(self):
-        html = self.load('%s/search' % SITE_URL)
+        html = self.ajax('%s/engine/ajax/get_filter.php' % SITE_URL, {'scope':'search', 'type':'translation'})
         result = {'name' : [xbmcup.app.lang[30136]], 'href': ['']}
         if not html:
             return None, result
-        soup = xbmcup.parser.html(self.strip_scripts(html))
-        genres = soup.find('section', id='items-more-translate').find_all('span', class_='item')
+
+        genres = json.loads(html, 'utf-8')
+
         for genre in genres:
-            result['name'].append(genre.get_text().strip().encode('utf-8').decode('utf-8'))
-            result['href'].append(genre.get('data-scope')[0].encode('utf-8').decode('utf-8')+genre.get('data-value').encode('utf-8').decode('utf-8'))
-        print result
+            result['name'].append(genres[genre].strip().encode('utf-8').decode('utf-8'))
+            result['href'].append(self.clear_filter_key(genre, 't'))
         return CACHE_TIME, result
 
 
@@ -150,10 +154,10 @@ class Filter(FilterData, AbstactList):
                 params.append(filter[key][1])
 
         url = url+('-'.join(params))
-
+        #print url
         if(show_results == True):
             md5 = hashlib.md5()
-            md5.update(url+'/page/'+str(page))
+            md5.update(url+'/page/'+str(page)+'?v='+xbmcup.app.addon['version'])
 
             response = CACHE(str(md5.hexdigest()), self.get_movies, url, page)
 
@@ -167,14 +171,14 @@ class Filter(FilterData, AbstactList):
             if(response['page']['pagenum'] > 1):
                 self.item('[COLOR green]'+xbmcup.app.lang[30106]+'[/COLOR]',
                           self.replace('filter', {'window' : '', 'filter' : filter, 'show_results' : True, 'page' : (page-1)}),
-                          cover=cover.prev)
+                          cover=cover.prev, folder=True)
 
             self.add_movies(response, 30110)
 
             if(response['page']['maxpage'] >= response['page']['pagenum']+1):
                 self.item('[COLOR green]'+xbmcup.app.lang[30107]+'[/COLOR]',
                             self.replace('filter', {'window' : '', 'filter' : filter, 'show_results' : True, 'page' : (page+1)}),
-                            cover=cover.next)
+                            cover=cover.next, folder=True)
 
 
     def rubrics_window(self):
@@ -183,28 +187,28 @@ class Filter(FilterData, AbstactList):
 
     def qualitys_window(self):
         md5 = hashlib.md5()
-        md5.update('/default/index/qualitys')
+        md5.update('/default/index/qualitys?v=%s' % xbmcup.app.addon['version'])
         self.quality_list = CACHE(str(md5.hexdigest()), self.get_quality_list)
         ret = xbmcup.gui.select(xbmcup.app.lang[30139], self.quality_list['name'])
         return False if ret < 0 else [self.quality_list['name'][ret], self.quality_list['href'][ret], ret]
 
     def productions_window(self):
         md5 = hashlib.md5()
-        md5.update('/default/index/countries')
+        md5.update('/default/index/countries?v=%s' % xbmcup.app.addon['version'])
         self.productions_list = CACHE(str(md5.hexdigest()), self.get_country_list)
         ret = xbmcup.gui.select(xbmcup.app.lang[30141], self.productions_list['name'])
         return False if ret < 0 else [self.productions_list['name'][ret], self.productions_list['href'][ret], ret]
 
     def genre_window(self):
         md5 = hashlib.md5()
-        md5.update('/default/index/janrs')
+        md5.update('/default/index/janrs?v=%s' % xbmcup.app.addon['version'])
         genres_list = CACHE(str(md5.hexdigest()), self.get_genre_list)
         ret = xbmcup.gui.select(xbmcup.app.lang[30138], genres_list['name'])
         return False if ret < 0 else [genres_list['name'][ret], genres_list['href'][ret], ret]
 
     def awards_window(self):
         md5 = hashlib.md5()
-        md5.update('/default/index/awards')
+        md5.update('/default/index/awards?v=%s' % xbmcup.app.addon['version'])
         awards_list = CACHE(str(md5.hexdigest()), self.get_awards_list)
         ret = xbmcup.gui.select(xbmcup.app.lang[30140], awards_list['name'])
         return False if ret < 0 else [awards_list['name'][ret], awards_list['href'][ret], ret]

@@ -186,6 +186,9 @@ class HttpData:
 
         html = html.encode('utf-8')
         soup = xbmcup.parser.html(self.strip_scripts(html))
+
+        print self.strip_scripts(html)
+
         try:
             try:
                 js_string = self.decode_direct_media_url(re.compile("videoLink = '([^\']+)';", re.S).findall(html)[0].decode('string_escape').decode('utf-8'))
@@ -404,6 +407,7 @@ class HttpData:
 
 
     def strip_scripts(self, html):
+        html = re.compile(r'<head[^>]*>(.*?)</head>', re.S).sub('<head></head>', html)
         #удаляет все теги <script></script> и их содержимое
         #сделал для того, что бы html parser не ломал голову на тегах в js
         return re.compile(r'<script[^>]*>(.*?)</script>', re.S).sub('', html)
