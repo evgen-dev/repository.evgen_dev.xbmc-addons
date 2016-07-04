@@ -17,8 +17,8 @@ class Auth:
             if(self.login == '' or  self.password == ''):
                 self.reset_auth()
                 return False
-            url = '%s/users/index/auth?mail=%s&pass=%s&social=0&_=1422391861285' % (SITE_URL, self.login, self.password)
-            response = xbmcup.net.http.get(url)
+            url = '%s/users/index/auth' % (SITE_URL)
+            response = xbmcup.net.http.post(url, {'mail' : self.login, 'pass' : self.password, 'social' : '0'})
         except xbmcup.net.http.exceptions.RequestException:
             return False
         else:
