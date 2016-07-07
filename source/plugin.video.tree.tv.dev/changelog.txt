@@ -1,4 +1,10 @@
-[B]0.2.2[/B]
+[B]0.2.4[/B]
+2016/07/04:
+- Добавлена поддержка STRM файлов, сслыки вида:
+plugin://plugin.video.tree.tv.dev/play?page=23347-top-gir-sezon-23&file=480p_Top.Gear.UK.S23E01.mp4&folder=Топ Гир. Сезон 23 (Jetvis.Studio.Paravozik)
+Параметры page и file - обязательные, а folder - опциональный.
+
+[B]0.2.3[/B]
 2016/07/04:
 - Исправлена авторизация
 

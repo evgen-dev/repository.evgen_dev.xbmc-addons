@@ -3,6 +3,7 @@
 import os, re, sys, json, urllib, hashlib, traceback
 import xbmcup.app, xbmcup.db, xbmcup.system, xbmcup.net, xbmcup.parser, xbmcup.gui
 import xbmc, cover, xbmcplugin, xbmcgui
+from xbmcup.app import Item
 from common import Render
 from auth import Auth
 from defines import *
@@ -371,3 +372,21 @@ class HttpData:
             print traceback.format_exc()
 
         return info
+
+class ResolveLink(xbmcup.app.Handler, HttpData, Render):
+    def handle(self):
+        item_dict = self.parent.to_dict()
+        self.params = self.argv[0]
+        movieInfo = self.get_movie_info(['/film/'+self.params['page']])
+        item_dict['cover'] = movieInfo['cover']
+        item_dict['title'] = self.params['file']
+        folder = self.params['folder'].encode('utf-8')
+        self.parent = Item(item_dict)
+        if(len(movieInfo['movies']) > 0):
+            for movies in movieInfo['movies']:
+                for q in movies['movies']:
+                    if(movies['folder_title'] == folder or folder == ''):
+                        if movies['movies'][q][0].find(self.params['file']) != -1:
+                            return movies['movies'][q][0]
+
+        return None
