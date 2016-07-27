@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-import os, re, sys, json, urllib, hashlib, traceback
+import os, re, sys, json, urllib, hashlib, traceback, urlparse
 import xbmcup.app, xbmcup.db, xbmcup.system, xbmcup.net, xbmcup.parser, xbmcup.gui
 import xbmc, cover, xbmcplugin, xbmcgui
 from xbmcup.app import Item
@@ -170,14 +170,17 @@ class HttpData:
 
 
     def get_movie_info(self, url):
-        url = SITE_URL+url[0]
-        html = self.load(url)
-        print url.encode('utf-8')
+
         movieInfo = {}
         movieInfo['no_files'] = None
         movieInfo['episodes'] = True
         movieInfo['movies'] = []
         movieInfo['resolutions'] = []
+        movieInfo['page_url'] = url[0]
+
+        url = SITE_URL+url[0]
+        html = self.load(url)
+        print url.encode('utf-8')
 
         if not html:
             movieInfo['no_files'] = 'HTTP error'
@@ -186,14 +189,48 @@ class HttpData:
         html = html.encode('utf-8')
         soup = xbmcup.parser.html(self.strip_scripts(html))
 
-        js_string = re.compile("'source'\s*:\s*\$\.parseJSON\('([^\']+)'\)", re.S).findall(html)[0].decode('string_escape').decode('utf-8')
-        movies = json.loads(js_string, 'utf-8')
+        folders = soup.find('div', id='accordion_wrap').findAll('div', class_='accordion_item')
+        #folders = soup.find('div', id='accordion_wrap').findAll('div', class_='folder_name')
+
+        avalible_res = soup.find('div', id='film_object_params').find('span', class_='film_q_img').get_text()
+
+        #подпер костылем, пусть не болеет
+        quality_matrix = {
+            'HD' : ['360', '480', '720', '1080'],
+            'HQ' : ['360', '480', '720'],
+            'SQ' : ['360', '480'],
+            'LQ' : ['360']
+        }
+
+        if(avalible_res == None or avalible_res not in quality_matrix):
+            avalible_res = 'HD'
+
+        movies = {}
+        for fwrap in folders:
+            folder_id = fwrap.find('div', class_='folder_name').get('data-folder')
+            movies[folder_id] = {}
+            folder_items = fwrap.findAll('div', class_='film_title_link')
+            for q in quality_matrix[avalible_res]:
+                for item in folder_items:
+                    movie_data = [item.find('a').get_text().encode('utf-8'), item.find('a').get('data-href')]
+                    try:
+                        movies[folder_id][q].append(movie_data)
+                    except:
+                        movies[folder_id][q] = []
+                        movies[folder_id][q].append(movie_data)
+
+
+        #print movies
+
+        #js_string = re.compile("'source'\s*:\s*\$\.parseJSON\('([^\']+)'\)", re.S).findall(html)[0].decode('string_escape').decode('utf-8')
+        #movies = json.loads(js_string, 'utf-8')
         #print movies
         if(movies != None and len(movies) > 0):
             for window_id in movies:
                 current_movie = {'folder_title' : '', 'movies': {}}
                 try:
-                    current_movie['folder_title'] = soup.find('div', {'data-folder': str(window_id)}).find('a').get('title').encode('utf-8')
+                    current_movie['folder_title'] = soup.find('div', {'data-folder': str(window_id)}).find('a')\
+                        .get('title').encode('utf-8')
                 except:
                     current_movie['folder_title'] = xbmcup.app.lang[30113]
 
@@ -211,6 +248,8 @@ class HttpData:
                     #     movieInfo['episodes'] = True
 
                 movieInfo['movies'].append(current_movie)
+
+            # movieInfo['movies'] = movies
 
             movieInfo['title'] = soup.find('h1', id='film_object_name').get_text()
             try:
@@ -248,7 +287,7 @@ class HttpData:
             try:
                 no_files = soup.find('div', class_='no_files').get_text().strip().encode('utf-8')
             except:
-                no_files = ''
+                no_files = 'Что-то пошло не так...'
 
             movieInfo['no_files'] = no_files
 
@@ -377,16 +416,51 @@ class ResolveLink(xbmcup.app.Handler, HttpData, Render):
     def handle(self):
         item_dict = self.parent.to_dict()
         self.params = self.argv[0]
+
         movieInfo = self.get_movie_info(['/film/'+self.params['page']])
         item_dict['cover'] = movieInfo['cover']
         item_dict['title'] = self.params['file']
         folder = self.params['folder'].encode('utf-8')
+        resolution = self.params['resolution'].encode('utf-8')
         self.parent = Item(item_dict)
+
+        #print movieInfo['movies']
+
+        #return 'http://cdn.3tv.im/hls/2/films/15/22345/26557/720p_Outsiders.s01e01.mp4/index.m3u8'
+
         if(len(movieInfo['movies']) > 0):
             for movies in movieInfo['movies']:
                 for q in movies['movies']:
-                    if(movies['folder_title'] == folder or folder == ''):
-                        if movies['movies'][q][0].find(self.params['file']) != -1:
-                            return movies['movies'][q][0]
+                    if(q == resolution):
+                        if(movies['folder_title'] == folder or folder == ''):
+                            for episode in movies['movies'][q]:
+                                if episode[0].find(self.params['file']) != -1:
+                                    return self.get_play_url(episode[1], resolution)
+
+        return None
+
+    def get_play_url(self, url, resolution):
+        parsed_url = urlparse.urlparse(self.get_iframe(url))
+        pl_url = "http://%s/m3u8/%s.m3u8" % (parsed_url[1], url.split('/')[2])
+        print pl_url
+        return self.get_selected_playlist(pl_url, resolution)
+
+    def get_iframe(self, url):
+        html = self.ajax(SITE_URL+url)
+        html = html.encode('utf-8')
+        soup = xbmcup.parser.html(self.strip_scripts(html))
+        return soup.find('iframe').get('src').encode('utf-8')
+
+    def get_selected_playlist(self, general_pl_url, resulution):
+        html = self.ajax(general_pl_url)
+        if not html: return None
+        html = html.encode('utf-8').split("\n")
+
+        return_next = False
+        for line in html:
+            if(return_next):
+                return line
+            if(line.find('x'+resulution+',') != -1):
+                return_next = True
 
         return None

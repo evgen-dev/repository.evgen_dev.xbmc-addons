@@ -139,7 +139,8 @@ class SearchList(AbstactList):
         else:
             history = []
             SQL.set('DELETE FROM search')
-
+        usersearch = None
+        vsearch = None
         try:
             usersearch = params['usersearch']
             vsearch = params['vsearch']
@@ -310,7 +311,7 @@ class QualityList(xbmcup.app.Handler, HttpData, Render):
 
     def handle(self):
         self.params = self.argv[0]
-        #print self.argv[0]
+
         try:
             self.movieInfo = self.params['movieInfo']
         except:
@@ -333,8 +334,6 @@ class QualityList(xbmcup.app.Handler, HttpData, Render):
             self.def_dir = 0
         else:
             self.def_dir=  self.params['sub_dir']
-
-        print default_quality
 
         if(default_quality != None and self.params['quality_dir'] == None):
             try:
@@ -374,7 +373,7 @@ class QualityList(xbmcup.app.Handler, HttpData, Render):
 
 
     def show_folders(self):
-        print self.movieInfo['no_files']
+        # print self.movieInfo['no_files']
         if(self.movieInfo['no_files'] == None):
             i = 0
             for movie in self.movieInfo['movies']:
@@ -397,18 +396,20 @@ class QualityList(xbmcup.app.Handler, HttpData, Render):
         show_first_quality = False
         if(self.params['quality_dir']):
             movies = self.movieInfo['movies'][self.def_dir]['movies'][str(self.params['quality_dir'])]
+            folder_title = self.movieInfo['movies'][self.def_dir]['folder_title'].encode('utf-8')
         else:
             show_first_quality = True
             movies = self.movieInfo['movies'][0]['movies']
+            folder_title = self.movieInfo['movies'][0]['folder_title']
 
         if(show_first_quality):
             for quality in movies:
                 for movie in movies[quality]:
-                    self.add_playable_item(movie)
+                    self.add_playable_item(self.movieInfo['page_url'], folder_title, quality, movie)
                 break
         else:
             for movie in movies:
-                self.add_playable_item(movie)
+                self.add_playable_item(self.movieInfo['page_url'], folder_title, str(self.params['quality_dir']), movie)
 
         self.render_items()
 
@@ -452,10 +453,23 @@ class QualityList(xbmcup.app.Handler, HttpData, Render):
             }
 
 
-    def add_playable_item(self, movie):
-        movie_name = movie.split('?')
-        self.item(os.path.basename(str(movie_name[0])),
-                           movie,
+    def add_playable_item(self, url, folder_title, quality, movie):
+        #movie_name = movie[0].split('?')
+        #play_url = 'plugin://%s/play?page=%s&file=%s&resolution=%s&folder=%s' % (PLUGIN_ID, url.split('/')[2], movie, quality, folder_title.decode('utf-8'))
+
+        # [{"page": "'+params['page'][0]+'", "file": "'+params['file'][0]+'", "resolution": "'+params['resolution'][0]+'", "folder" : "'+params['folder'][0]+'"}]]
+
+        play_url = self.resolve('resolve',
+                    {
+                        'page'          : url.split('/')[2],
+                        'file'          : movie[0],
+                        'resolution'    : quality,
+                        'folder'        : folder_title.decode('utf-8')
+                    }
+        )
+
+        self.item(str(movie[0]),
+                           play_url,
                            folder=False,
                            media='video',
                            info=self.get_info(),
