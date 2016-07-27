@@ -129,6 +129,7 @@ class HttpData:
                     information = '[COLOR white]['+', '.join(dop_information)+'][/COLOR]'
 
                 posters = div.find('div', class_='preview').find_all('img')
+
                 movieposter = None
                 for img in posters:
                     img_src = img.get('src')
@@ -140,6 +141,13 @@ class HttpData:
 
                 if(href == None):
                     raise
+
+                #костыль для закладок
+                if(classname == 'book_mark_content'):
+                    try:
+                        movieposter = SITE_URL+posters[0].get('src')
+                    except:
+                        pass
 
                 if(search != ''):
                     name = href.find('img').get('alt').strip()
