@@ -396,7 +396,7 @@ class QualityList(xbmcup.app.Handler, HttpData, Render):
         show_first_quality = False
         if(self.params['quality_dir']):
             movies = self.movieInfo['movies'][self.def_dir]['movies'][str(self.params['quality_dir'])]
-            folder_title = self.movieInfo['movies'][self.def_dir]['folder_title'].encode('utf-8')
+            folder_title = self.movieInfo['movies'][self.def_dir]['folder_title']
         else:
             show_first_quality = True
             movies = self.movieInfo['movies'][0]['movies']
@@ -464,7 +464,7 @@ class QualityList(xbmcup.app.Handler, HttpData, Render):
                         'page'          : url.split('/')[2],
                         'file'          : movie[0],
                         'resolution'    : quality,
-                        'folder'        : folder_title.decode('utf-8')
+                        'folder'        : folder_title
                     }
         )
 

@@ -25,7 +25,7 @@
 
 	<addon id="plugin.video.tree.tv.dev"
        name="Tree.Tv"
-       version="0.2.6"
+       version="0.2.7"
        provider-name="Evgenii Devisok aka evgen_dev">
 	<requires>
 		<import addon="xbmc.python" version="2.1.0"/>
