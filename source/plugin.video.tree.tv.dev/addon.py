@@ -12,7 +12,7 @@ if(split_vars[-1] == 'play'):
     except:
         params['folder'] = ['']
     sys.argv[0] = '/'.join(split_vars)
-    toplay = '{"url": ["resolve", "resolve", [{"page": "'+params['page'][0]+'", "file": "'+params['file'][0]+'", "folder" : "'+params['folder'][0]+'"}]], "source": "item", "folder": false, "parent" : {}}'
+    toplay = '{"url": ["resolve", "resolve", [{"page": "'+params['page'][0]+'", "resolution": "'+params['resolution'][0]+'", "file": "'+params['file'][0]+'", "folder" : "'+params['folder'][0]+'"}]], "source": "item", "folder": false, "parent" : {}}'
     sys.argv[2] = '?json'+urllib.quote_plus(toplay)
 
 import xbmcup.app

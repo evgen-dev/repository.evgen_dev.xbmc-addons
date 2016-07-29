@@ -425,6 +425,8 @@ class ResolveLink(xbmcup.app.Handler, HttpData, Render):
         item_dict = self.parent.to_dict()
         self.params = self.argv[0]
 
+        #print self.params
+
         movieInfo = self.get_movie_info(['/film/'+self.params['page']])
         item_dict['cover'] = movieInfo['cover']
         item_dict['title'] = self.params['file']
@@ -450,7 +452,6 @@ class ResolveLink(xbmcup.app.Handler, HttpData, Render):
     def get_play_url(self, url, resolution):
         parsed_url = urlparse.urlparse(self.get_iframe(url))
         pl_url = "http://%s/m3u8/%s.m3u8" % (parsed_url[1], url.split('/')[2])
-        print pl_url
         return self.get_selected_playlist(pl_url, resolution)
 
     def get_iframe(self, url):
@@ -463,12 +464,13 @@ class ResolveLink(xbmcup.app.Handler, HttpData, Render):
         html = self.ajax(general_pl_url)
         if not html: return None
         html = html.encode('utf-8').split("\n")
-
+        print html
         return_next = False
         for line in html:
             if(return_next):
+                print line
                 return line
-            if(line.find('x'+resulution+',') != -1):
+            if(line.find('x'+resulution) != -1):
                 return_next = True
 
         return None
