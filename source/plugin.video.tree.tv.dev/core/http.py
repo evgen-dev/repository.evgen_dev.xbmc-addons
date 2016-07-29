@@ -459,14 +459,13 @@ class ResolveLink(xbmcup.app.Handler, HttpData, Render):
         html = html.encode('utf-8')
         soup = xbmcup.parser.html(self.strip_scripts(html))
         iframe_url = soup.find('iframe').get('src').encode('utf-8')
-        self.ajax(iframe_url) #если не загружать ссылку из фрейма не всегда отдает плейлист
+        self.ajax(iframe_url.replace('/?', '/list/?')) #если не загружать эту ссылку - не всегда отдает плейлист
         return iframe_url
 
     def get_selected_playlist(self, general_pl_url, resulution):
         html = self.ajax(general_pl_url)
         if not html: return None
         html = html.encode('utf-8').split("\n")
-        print html
         return_next = False
         for line in html:
             if(return_next):
