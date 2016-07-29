@@ -51,7 +51,7 @@
 	<string id="30154">Не удалось добавить закладку</string>
 	<string id="30155">Не удалось удалить закладку</string>
 	<string id="30156">Добавить закладку в...</string>
-	<string id="30157">[COLOR blue][Создать папку][/COLOR]</string>
+	<string id="30157">[Создать папку][/COLOR]</string>
 	<string id="30158">[COLOR red]Удалить папку[/COLOR]</string>
 	<string id="30159">Папка закладок удалена</string>
 	<string id="30160">[COLOR blue]Рубрики:[/COLOR]</string>
@@ -83,5 +83,8 @@
     <string id="34022">История поиска</string>
     <string id="34023">Количество последних поисковых запросов</string>
     <string id="34024">Выбирать равное или меньшее качество</string>
-
+	
+	<string id="37000">[COLOR red]Нравится плагин?[/COLOR]</string>
+	<string id="37001">Дополнительные</string>
+	<string id="37002">Скрыть пункт "Нравится плагин?"</string>
 </strings>

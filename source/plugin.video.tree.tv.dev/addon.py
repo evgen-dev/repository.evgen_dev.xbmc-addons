@@ -21,6 +21,7 @@ from core.list import MovieList, BookmarkList, QualityList, SearchList, Collecti
 from core.http import ResolveLink
 from core.filter import Filter
 from core.context import ContextMenu
+from core.donate import Donate
 
 plugin = xbmcup.app.Plugin()
 
@@ -33,5 +34,6 @@ plugin.route('filter', Filter)
 plugin.route('bookmarks', BookmarkList)
 plugin.route('context', ContextMenu)
 plugin.route('resolve', ResolveLink)
+plugin.route('donate', Donate)
 
 plugin.run()
