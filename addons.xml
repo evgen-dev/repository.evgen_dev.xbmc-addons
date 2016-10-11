@@ -91,7 +91,7 @@
 	</extension>
 </addon>
 
-<addon id="script.module.xbmcup" name="XbmcUp" version="0.1.1" provider-name="HAL9000">
+<addon id="script.module.xbmcup" name="XbmcUp" version="0.2.1" provider-name="HAL9000">
     <requires>
         <import addon="xbmc.python" version="2.14.0"/>
     </requires>
