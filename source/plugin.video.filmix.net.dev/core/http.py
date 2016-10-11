@@ -74,21 +74,26 @@ class HttpData:
         else:
             url = SITE_URL+"/"+url.strip('/')
 
+        print url
+
         if(search != ''):
             html = self.ajax(url)
         else:
             html = self.load(url)
 
+        #print html.encode('utf-8')
         print url
 
         if not html:
             return None, {'page': {'pagenum' : 0, 'maxpage' : 0}, 'data': []}
         result = {'page': {}, 'data': []}
         soup = xbmcup.parser.html(self.strip_scripts(html))
+
         if(search != ''):
             result['page'] = self.get_page_search(soup)
         else:
             result['page'] = self.get_page(soup)
+
         if(idname != ''):
             center_menu = soup.find('div', id=idname)
         else:
@@ -97,6 +102,8 @@ class HttpData:
             for div in center_menu.find_all('article', class_=itemclassname):
                 href = div.find('div', class_='short')#.find('a')
 
+                movie_name = div.find('div', class_='full').find('h3', class_='name').find('a').get_text()
+
                 not_movie = True
                 try:
                     not_movie_test = div.find('span', class_='not-movie').get_text()
@@ -104,7 +111,7 @@ class HttpData:
                     not_movie = False
 
                 try:
-                    quality = div.find('div', class_='rip').find('span', class_='added-info').get_text().strip()
+                    quality = div.find('div', class_='full').find('div', class_='quality').get_text().strip()
                 except:
                     quality = ''
 
@@ -116,7 +123,7 @@ class HttpData:
                     pass
 
                 try:
-                    genre = div.find('div', class_='category').find(class_='added-info').get_text().strip()
+                    genre = div.find('div', class_='category').find(class_='item-content').get_text().strip()
                     dop_information.append(genre)
                 except:
                     print traceback.format_exc()
@@ -136,7 +143,7 @@ class HttpData:
                         'not_movie': not_movie,
                         'quality': self.format_quality(quality),
                         'year': information,
-                        'name': href.find('div', class_='name').get_text().strip(),
+                        'name': movie_name.strip(),
                         'img': None if not movieposter else movieposter
                     })
         except:
@@ -187,7 +194,7 @@ class HttpData:
         html = html.encode('utf-8')
         soup = xbmcup.parser.html(self.strip_scripts(html))
 
-        print self.strip_scripts(html)
+        #print self.strip_scripts(html)
 
         try:
             try:
@@ -237,7 +244,7 @@ class HttpData:
 
                 movieInfo['movies'].append(current_movie)
 
-            movieInfo['title'] = soup.find('h1', class_='name').get_text()
+            movieInfo['title'] = soup.find('div', class_='name').get_text()
             try:
                 movieInfo['originaltitle'] = soup.find('div', class_='origin-name').get_text().strip()
             except:
@@ -249,16 +256,17 @@ class HttpData:
                 movieInfo['description'] = ''
 
             try:
-                movieInfo['fanart'] = SITE_URL+soup.find('div', class_='screen_bg').find('a').get('href')
+                movieInfo['fanart'] = SITE_URL+soup.find('ul', class_='frames-list').find('a').get('href')
             except:
                 movieInfo['fanart'] = ''
             try:
                 movieInfo['cover'] = SITE_URL+soup.find('img', class_='poster').get('src')
             except:
                 movieInfo['cover'] = ''
+
             try:
                 movieInfo['genres'] = []
-                genres = soup.find('div', class_='category').findAll('a')
+                genres = soup.find('div', class_='category').find_all('a')
                 for genre in genres:
                    movieInfo['genres'].append(genre.get_text().strip())
                 movieInfo['genres'] = ' / '.join(movieInfo['genres']).encode('utf-8')
@@ -272,6 +280,7 @@ class HttpData:
 
             try:
                 movieInfo['durarion'] = soup.find('div', class_='durarion').get('content')
+                movieInfo['durarion'] = int(movieInfo['durarion'])*60
             except:
                 movieInfo['durarion'] = ''
 
@@ -294,7 +303,10 @@ class HttpData:
             except:
                 movieInfo['director'] = ''
         except:
-            pass
+            print traceback.format_exc()
+
+        print movieInfo
+
         return movieInfo
 
     def get_modal_info(self, url):
