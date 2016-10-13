@@ -402,7 +402,7 @@ class HttpData:
             except:
                 wrap  = soup.find('div', class_='paginationControl')
 
-            info['pagenum'] = int(wrap.find('b').get_text().encode('utf-8'))
+            info['pagenum'] = int(wrap.find('a', class_="active").get_text().encode('utf-8'))
             try:
                 info['maxpage'] = int(wrap.find('a', class_='last').get('data-rel'))
             except:

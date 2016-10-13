@@ -26,6 +26,6 @@
 	</category>
 
 	<category label="37001">
-		<setting id="hide_donate" type="bool" visible="true" label="37002" default="1" />
+		<setting id="hide_donate" type="bool" visible="true" label="37002" default="false" />
 	</category>
 </settings>
