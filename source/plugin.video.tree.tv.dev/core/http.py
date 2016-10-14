@@ -8,6 +8,9 @@ from common import Render
 from auth import Auth
 from defines import *
 
+reload(sys)
+sys.setdefaultencoding("UTF8")
+
 try:
     cache_minutes = 60*int(xbmcup.app.setting['cache_time'])
 except:
@@ -389,8 +392,8 @@ class HttpData:
         html = re.compile(r'([a-zA-Z0-9]{1,1})"([a-zA-Z0-9]{1,1})').sub("\\1'\\2", html)
         html = re.compile(r'<script[^>]*>(.*?)</script>', re.S).sub('', html)
         html = re.compile(r'</script>', re.S).sub('', html)
-        html = re.compile(r'alt="[^>]+', re.S).sub('', html)
-        html = re.compile(r'title="[^>]+', re.S).sub('', html)
+        html = re.compile(r'alt="(>+|src=")', re.S).sub('\\1', html)
+        html = re.compile(r'title="(>+|src=")', re.S).sub('\\1', html)
         #print html.encode('utf-8')
         return html
 
@@ -442,7 +445,10 @@ class ResolveLink(xbmcup.app.Handler, HttpData, Render):
         resolution = self.params['resolution'].encode('utf-8')
         self.parent = Item(item_dict)
 
-        #print movieInfo['movies']
+        # print folder
+        # print resolution
+        #
+        # print movieInfo
 
         #return 'http://cdn.3tv.im/hls/2/films/15/22345/26557/720p_Outsiders.s01e01.mp4/index.m3u8'
 
@@ -450,6 +456,7 @@ class ResolveLink(xbmcup.app.Handler, HttpData, Render):
             for movies in movieInfo['movies']:
                 for q in movies['movies']:
                     if(q == resolution):
+                        # print movies['folder_title'].encode('utf-8')
                         if(movies['folder_title'] == folder or folder == ''):
                             for episode in movies['movies'][q]:
                                 if episode[0].find(self.params['file']) != -1:
