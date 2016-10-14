@@ -391,7 +391,7 @@ class HttpData:
         html = re.compile(r'</script>', re.S).sub('', html)
         html = re.compile(r'alt="[^>]+', re.S).sub('', html)
         html = re.compile(r'title="[^>]+', re.S).sub('', html)
-        print html.encode('utf-8')
+        #print html.encode('utf-8')
         return html
 
     def format_quality(self, quality):
