@@ -91,9 +91,10 @@ class HttpData:
             return None, {'page': {'pagenum' : 0, 'maxpage' : 0}, 'data': []}
         result = {'page': {}, 'data': []}
         soup = xbmcup.parser.html(self.strip_scripts(html))
+        #print soup
         result['page'] = self.get_page(soup)
         center_menu = soup.find('div', class_=classname)
-        #print center_menu
+        # print center_menu
         try:
             for div in center_menu.find_all('div', class_=itemclassname):
                 if(search != ''):
@@ -384,7 +385,14 @@ class HttpData:
     def strip_scripts(self, html):
         #удаляет все теги <script></script> и их содержимое
         #сделал для того, что бы html parser не ломал голову на тегах в js
-        return re.compile(r'<script[^>]*>(.*?)</script>', re.S).sub('', html)
+
+        html = re.compile(r'([a-zA-Z0-9]{1,1})"([a-zA-Z0-9]{1,1})').sub("\\1'\\2", html)
+        html = re.compile(r'<script[^>]*>(.*?)</script>', re.S).sub('', html)
+        html = re.compile(r'</script>', re.S).sub('', html)
+        html = re.compile(r'alt="[^>]+', re.S).sub('', html)
+        html = re.compile(r'title="[^>]+', re.S).sub('', html)
+        print html.encode('utf-8')
+        return html
 
     def format_quality(self, quality):
         qualitys = {'HD' : 'ff3BADEE', 'HQ' : 'ff59C641', 'SQ' : 'ffFFB119', 'LQ' : 'ffDE4B64'}
