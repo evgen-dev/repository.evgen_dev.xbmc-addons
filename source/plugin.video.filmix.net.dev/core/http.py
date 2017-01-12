@@ -18,7 +18,7 @@ class HttpData:
         try:
             self.auth = Auth()
             self.cookie = self.auth.get_cookies()
-            response = xbmcup.net.http.get(url, cookies=self.cookie)
+            response = xbmcup.net.http.get(url, cookies=self.cookie, verify=False)
         except xbmcup.net.http.exceptions.RequestException:
             print traceback.format_exc()
             return None
@@ -37,7 +37,7 @@ class HttpData:
         try:
             self.auth = Auth()
             self.cookie = self.auth.get_cookies()
-            response = xbmcup.net.http.post(url, data, cookies=self.cookie)
+            response = xbmcup.net.http.post(url, data, cookies=self.cookie, verify=False)
         except xbmcup.net.http.exceptions.RequestException:
             print traceback.format_exc()
             return None
@@ -57,9 +57,9 @@ class HttpData:
                 'X-Requested-With' : 'XMLHttpRequest'
             }
             if(len(data) > 0):
-                response = xbmcup.net.http.post(url, data, cookies=self.cookie, headers=headers)
+                response = xbmcup.net.http.post(url, data, cookies=self.cookie, headers=headers, verify=False)
             else:
-                response = xbmcup.net.http.get(url, cookies=self.cookie, headers=headers)
+                response = xbmcup.net.http.get(url, cookies=self.cookie, headers=headers, verify=False)
         except xbmcup.net.http.exceptions.RequestException:
             print traceback.format_exc()
             return None
@@ -132,7 +132,7 @@ class HttpData:
                 if(len(dop_information) > 0):
                     information = '[COLOR white]['+', '.join(dop_information)+'][/COLOR]'
 
-                movieposter = SITE_URL+href.find('img', class_='poster').get('src')
+                movieposter = href.find('img', class_='poster').get('src')
 
                 movie_url = href.find('a').get('href'),
                 movie_id = re.compile('/([\d]+)-', re.S).findall(movie_url[0])[0]
@@ -260,7 +260,7 @@ class HttpData:
             except:
                 movieInfo['fanart'] = ''
             try:
-                movieInfo['cover'] = SITE_URL+soup.find('img', class_='poster').get('src')
+                movieInfo['cover'] = soup.find('img', class_='poster').get('src')
             except:
                 movieInfo['cover'] = ''
 
@@ -339,7 +339,7 @@ class HttpData:
              movieInfo['title'] = '%s / %s' % (movieInfo['title'],  movieInfo['originaltitle'])
 
         try:
-            movieInfo['poster'] = SITE_URL+soup.find('img', class_='poster').get('src')
+            movieInfo['poster'] = soup.find('img', class_='poster').get('src')
         except:
             movieInfo['poster'] = ''
 

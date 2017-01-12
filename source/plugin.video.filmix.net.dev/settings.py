@@ -20,7 +20,10 @@ if(sys.argv[1] == 'clear_cache'):
     CACHE = xbmcup.db.Cache(xbmcup.system.fs('sandbox://'+CACHE_DATABASE))
     CACHE.flush()
     SQL = xbmcup.db.SQL(xbmcup.system.fs('sandbox://'+CACHE_DATABASE))
-    SQL.set('DELETE FROM search')
+    try:
+        SQL.set('DELETE FROM search')
+    except:
+        pass
     xbmcup.gui.message('Кеш успешно очищен')
 
 if(sys.argv[1] == 'login'):
