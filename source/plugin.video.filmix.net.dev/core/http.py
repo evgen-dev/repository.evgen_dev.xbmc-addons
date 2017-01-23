@@ -49,13 +49,17 @@ class HttpData:
             return None
 
 
-    def ajax(self, url, data={}):
+    def ajax(self, url, data={}, referer=False):
         try:
             self.auth = Auth()
             self.cookie = self.auth.get_cookies()
             headers = {
                 'X-Requested-With' : 'XMLHttpRequest'
             }
+
+            if(referer):
+                headers['Referer'] = referer
+
             if(len(data) > 0):
                 response = xbmcup.net.http.post(url, data, cookies=self.cookie, headers=headers, verify=False)
             else:
@@ -198,51 +202,56 @@ class HttpData:
 
         try:
             try:
-                js_string = self.decode_direct_media_url(re.compile("videoLink = '([^\']+)';", re.S).findall(html)[0].decode('string_escape').decode('utf-8'))
+                film_id = re.compile('film_id ?= ?([\d]+);', re.S).findall(html)[0].decode('string_escape').decode('utf-8')
+                js_string = self.ajax(SITE_URL+'/api/movies/player_data', {'post_id' : film_id}, url)
+                player_data =  json.loads(js_string, 'utf-8')
+                player_data = player_data['message']['translations']['flash']
             except:
-                try:
-                    js_string = self.decode_direct_media_url(re.compile("plLink = '([^\']+)';", re.S).findall(html)[0].decode('string_escape').decode('utf-8'))
-                except:
-                    movieInfo['no_files'] = xbmcup.app.lang[34026].encode('utf8')
-                    raise
+                movieInfo['no_files'] = xbmcup.app.lang[34026].encode('utf8')
+                raise
 
-            if(js_string.find('.txt') != -1):
-                playlist = self.decode_direct_media_url(self.load(js_string))
+            for translate in player_data:
+                js_string = self.decode_direct_media_url(player_data[translate])
+                print js_string
+                if(js_string.find('.txt') != -1):
+                    playlist = self.decode_direct_media_url(self.load(js_string))
 
-                movies = json.loads(playlist, 'utf-8')
-                for season in movies['playlist']:
-                    current_movie = {'folder_title' : season['comment'], 'movies': {}}
+                    movies = json.loads(playlist, 'utf-8')
+                    for season in movies['playlist']:
+                        current_movie = {'folder_title' : season['comment']+' ('+translate+')', 'movies': {}}
 
-                    for movie in season['playlist']:
-                        avail_quality = self.get_qualitys(movie['file'])
-                        for q in avail_quality:
-                            if(q == ''): continue
-                            direct_link = self.format_direct_link(movie['file'], q) if q != 0 else movie['file']
-                            try:
-                                current_movie['movies'][q].append(direct_link)
-                            except:
-                                current_movie['movies'][q] = []
-                                current_movie['movies'][q].append(direct_link)
+                        for movie in season['playlist']:
+                            avail_quality = self.get_qualitys(movie['file'])
+                            for q in avail_quality:
+                                if(q == ''): continue
+                                direct_link = self.format_direct_link(movie['file'], q) if q != 0 else movie['file']
+                                try:
+                                    current_movie['movies'][q].append(direct_link)
+                                except:
+                                    current_movie['movies'][q] = []
+                                    current_movie['movies'][q].append(direct_link)
 
 
-                    #for resulut in current_movie['movies']:
-                    #    current_movie['movies'][resulut] = current_movie['movies'][resulut][0]
+                        #for resulut in current_movie['movies']:
+                        #    current_movie['movies'][resulut] = current_movie['movies'][resulut][0]
+
+                        movieInfo['movies'].append(current_movie)
+
+                elif(js_string.find('http://') != -1 or js_string.find('https://') != -1):
+                    avail_quality = self.get_qualitys(js_string)
+                    current_movie = {'folder_title' : translate, 'movies': {}}
+                    for q in avail_quality:
+                        if(q == ''): continue
+                        direct_link = self.format_direct_link(js_string, q) if q != 0 else js_string
+                        try:
+                            current_movie['movies'][q].append(direct_link)
+                        except:
+                            current_movie['movies'][q] = []
+                            current_movie['movies'][q].append(direct_link)
 
                     movieInfo['movies'].append(current_movie)
-
-            elif(js_string.find('http://') != -1):
-                avail_quality = self.get_qualitys(js_string)
-                current_movie = {'folder_title' : '1', 'movies': {}}
-                for q in avail_quality:
-                    if(q == ''): continue
-                    direct_link = self.format_direct_link(js_string, q) if q != 0 else js_string
-                    try:
-                        current_movie['movies'][q].append(direct_link)
-                    except:
-                        current_movie['movies'][q] = []
-                        current_movie['movies'][q].append(direct_link)
-
-                movieInfo['movies'].append(current_movie)
+             #   break
+            #print movieInfo['movies']
 
             movieInfo['title'] = soup.find('div', class_='name').get_text()
             try:

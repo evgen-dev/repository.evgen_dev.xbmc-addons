@@ -2,7 +2,7 @@
 <addons>
 	<addon id="plugin.video.filmix.net.dev"
        name="Filmix.Net"
-       version="0.0.8"
+       version="0.1.0"
        provider-name="Evgenii Devisok aka evgen_dev">
 	<requires>
 		<import addon="xbmc.python" version="2.1.0"/>
@@ -18,7 +18,7 @@
 		</description>
 		<platform>all</platform>
 		<license>GNU GENERAL PUBLIC LICENSE. Version 2, June 1991</license>
-		<forum></forum>
+		<forum>http://xbmc.ru/forum/showthread.php?t=11719</forum>
 		<email>xbmc@devisok.org</email>
 	</extension>
 </addon>
