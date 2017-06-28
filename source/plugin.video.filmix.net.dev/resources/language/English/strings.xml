@@ -92,5 +92,8 @@
 	<string id="34031">Не удалось загрузить информацию</string>
 	<string id="34032">Не удалось найти ссылку на трейлер</string>
 	<string id="34033">Информация о фильме</string>
-
+	
+	<string id="37000">[COLOR red]Нравится плагин?[/COLOR]</string>
+	<string id="37001">Дополнительные</string>
+	<string id="37002">Скрыть пункт "Нравится плагин?"</string>
 </strings>

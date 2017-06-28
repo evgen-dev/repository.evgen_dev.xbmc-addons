@@ -266,7 +266,7 @@ class QualityList(xbmcup.app.Handler, HttpData, Render):
                                     self.params['quality_dir'] = default_quality
                                 except:
                                     pass
-
+        print self.movieInfo['movies']
         #если на сайте несколько папок с файлами
         if((len(self.movieInfo['movies']) > 1 and self.params['sub_dir'] == None) or self.movieInfo['no_files'] != None):
             self.show_folders()
@@ -329,7 +329,8 @@ class QualityList(xbmcup.app.Handler, HttpData, Render):
 
         resolutions = []
         for movie in movies:
-            resolutions.append(int(movie))
+            if(movie != "1080p"):
+                resolutions.append(int(movie))
 
         resolutions.sort()
 

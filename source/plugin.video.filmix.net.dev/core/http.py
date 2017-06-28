@@ -14,11 +14,16 @@ except:
 
 class HttpData:
 
+    mycookie = None
+
     def load(self, url):
         try:
             self.auth = Auth()
             self.cookie = self.auth.get_cookies()
-            response = xbmcup.net.http.get(url, cookies=self.cookie, verify=False)
+            cook = self.mycookie if self.cookie == None else self.cookie
+            response = xbmcup.net.http.get(url, cookies=cook, verify=False)
+            if(self.cookie == None):
+                self.mycookie = response.cookies
         except xbmcup.net.http.exceptions.RequestException:
             print traceback.format_exc()
             return None
@@ -37,7 +42,12 @@ class HttpData:
         try:
             self.auth = Auth()
             self.cookie = self.auth.get_cookies()
-            response = xbmcup.net.http.post(url, data, cookies=self.cookie, verify=False)
+            cook = self.mycookie if self.cookie == None else self.cookie
+            response = xbmcup.net.http.post(url, data, cookies=cook, verify=False)
+
+            if(self.cookie == None):
+                self.mycookie = response.cookies
+
         except xbmcup.net.http.exceptions.RequestException:
             print traceback.format_exc()
             return None
@@ -56,14 +66,19 @@ class HttpData:
             headers = {
                 'X-Requested-With' : 'XMLHttpRequest'
             }
-
             if(referer):
                 headers['Referer'] = referer
 
+
+            cook = self.mycookie if self.cookie == None else self.cookie
             if(len(data) > 0):
-                response = xbmcup.net.http.post(url, data, cookies=self.cookie, headers=headers, verify=False)
+                response = xbmcup.net.http.post(url, data, cookies=cook, headers=headers, verify=False)
             else:
-                response = xbmcup.net.http.get(url, cookies=self.cookie, headers=headers, verify=False)
+                response = xbmcup.net.http.get(url, cookies=cook, headers=headers, verify=False)
+
+            if(self.cookie == None):
+                self.mycookie = response.cookies
+
         except xbmcup.net.http.exceptions.RequestException:
             print traceback.format_exc()
             return None
@@ -199,11 +214,11 @@ class HttpData:
         soup = xbmcup.parser.html(self.strip_scripts(html))
 
         #print self.strip_scripts(html)
-
         try:
             try:
                 film_id = re.compile('film_id ?= ?([\d]+);', re.S).findall(html)[0].decode('string_escape').decode('utf-8')
                 js_string = self.ajax(SITE_URL+'/api/movies/player_data', {'post_id' : film_id}, url)
+                print js_string
                 player_data =  json.loads(js_string, 'utf-8')
                 player_data = player_data['message']['translations']['flash']
             except:

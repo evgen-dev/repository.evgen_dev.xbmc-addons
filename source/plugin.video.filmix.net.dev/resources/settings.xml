@@ -24,4 +24,8 @@
         <setting label="31013" type="action" option="close" visible="!eq(-1,true)+!eq(-2,)" enabled="false" action="RunScript($CWD/settings.py, login)"/>
         <setting label="31014" type="action" option="close" visible="!eq(-2,false)" action="RunScript($CWD/settings.py, logout)"/>
 	</category>
+	
+	<category label="37001">
+		<setting id="hide_donate" type="bool" visible="true" label="37002" default="false" />
+	</category>
 </settings>

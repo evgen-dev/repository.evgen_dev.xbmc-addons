@@ -38,13 +38,16 @@ class Auth:
     def save_cookies(self, cookiejar):
         with open(self.cookie_file, 'wb') as f:
             pickle.dump(cookiejar, f)
+        f.close()
 
 
     def get_cookies(self):
         if(xbmcup.system.fs.exists('sandbox://'+COOKIE_FILE)):
             with open(self.cookie_file, 'rb') as f:
-                return pickle.load(f)
-        return {}
+                cook = pickle.load(f)
+                f.close()
+                return cook
+        return None
 
 
     def reset_auth(self, reset_settings=False):
