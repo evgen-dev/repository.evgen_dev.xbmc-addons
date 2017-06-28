@@ -1,12 +1,14 @@
 # -*- coding: utf-8 -*-
 
-import os, re, sys, json, urllib, hashlib, traceback, urlparse
+import os, re, sys, json, urllib, hashlib, traceback, urlparse, random, math, time
 import xbmcup.app, xbmcup.db, xbmcup.system, xbmcup.net, xbmcup.parser, xbmcup.gui
 import xbmc, cover, xbmcplugin, xbmcgui
 from xbmcup.app import Item
 from common import Render
 from auth import Auth
+from fingerprint import FingerPrint
 from defines import *
+from pprint import pprint
 
 reload(sys)
 sys.setdefaultencoding("UTF8")
@@ -16,14 +18,20 @@ try:
 except:
     cache_minutes = 0
 
+#log = open(xbmcup.system.fs('sandbox://myprog.log'), "a")
+#sys.stdout = log
+
 class HttpData:
 
     def load(self, url):
         try:
             self.auth = Auth()
             self.cookie = self.auth.get_cookies()
+            # self.cookie.set('tt1', 'test', path='/', domain='.'+SITE_DOMAIN, expires=int(time.time())+(3600*4))
+            # print self.cookie
             headers = {
-                'Referer' : url
+                'Referer' : url,
+                'User-agent' : 'Mozilla/5.0 (Windows NT 6.1; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.3'
             }
             response = xbmcup.net.http.get(url, cookies=self.cookie, headers=headers)
         except xbmcup.net.http.exceptions.RequestException:
@@ -58,17 +66,47 @@ class HttpData:
                 return response.text
             return None
 
-
-    def ajax(self, url):
+    def ajaxpost(self, url, data, fpcookie=''):
+        try:
+            data
+        except:
+            data = {}
         try:
             self.auth = Auth()
             self.cookie = self.auth.get_cookies()
+            #if(fpcookie != ''):
+            self.cookie.set('mycook', fpcookie, domain='.'+SITE_DOMAIN, path='/', expires=int(time.time())+(3600*4))
+            #pprint( self.cookie)
+
+            headers = {
+                'Referer' : SITE_URL,
+                'X-Requested-With'  : 'XMLHttpRequest',
+            }
+            response = xbmcup.net.http.post(url, data, cookies=self.cookie, headers=headers)
+        except xbmcup.net.http.exceptions.RequestException:
+            print traceback.format_exc()
+            return None
+        else:
+            print response.text
+            if(response.status_code == 200):
+                return response.text
+            return None
+
+    def ajax(self, url, fpcookie='', useragent=None):
+        try:
+            self.auth = Auth()
+            self.cookie = self.auth.get_cookies()
+
+            #if(fpcookie != ''):
+            self.cookie.set('mycook', fpcookie, domain='.'+SITE_DOMAIN, path='/')
+            #print self.cookie
             headers = {
                 'X-Requested-With'  : 'XMLHttpRequest',
-                'Referer'           : SITE_URL
+                'Referer'           : SITE_URL,
+                'User-agent'        : 'Mozilla/5.0 (Windows NT 6.1; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.36' if useragent==None else useragent
             }
+
             response = xbmcup.net.http.get(url, cookies=self.cookie, headers=headers)
-            print url
         except xbmcup.net.http.exceptions.RequestException:
             print traceback.format_exc()
             return None
@@ -81,7 +119,7 @@ class HttpData:
             url = SITE_URL+"/"+url.strip('/')+"/page/"+str(page+1)
         else:
             url = SITE_URL+"/"+url.strip('/')
-        print url
+        #print url
 
         if(search != '' and page == 0):
             html = self.post(url, {'usersearch' : search, 'filter' : 'all'})
@@ -192,7 +230,7 @@ class HttpData:
 
         url = SITE_URL+url[0]
         html = self.load(url)
-        print url.encode('utf-8')
+        #print url.encode('utf-8')
 
         if not html:
             movieInfo['no_files'] = 'HTTP error'
@@ -219,17 +257,20 @@ class HttpData:
 
         movies = {}
         for fwrap in folders:
-            folder_id = fwrap.find('div', class_='folder_name').get('data-folder')
-            movies[folder_id] = {}
-            folder_items = fwrap.findAll('div', class_='film_title_link')
-            for q in quality_matrix[avalible_res]:
-                for item in folder_items:
-                    movie_data = [item.find('a').get_text().encode('utf-8'), item.find('a').get('data-href')]
-                    try:
-                        movies[folder_id][q].append(movie_data)
-                    except:
-                        movies[folder_id][q] = []
-                        movies[folder_id][q].append(movie_data)
+            try:
+                folder_id = fwrap.find('div', class_='folder_name').get('data-folder')
+                movies[folder_id] = {}
+                folder_items = fwrap.findAll('div', class_='film_title_link')
+                for q in quality_matrix[avalible_res]:
+                    for item in folder_items:
+                        movie_data = [item.find('a').get_text().encode('utf-8'), item.find('a').get('data-href')]
+                        try:
+                            movies[folder_id][q].append(movie_data)
+                        except:
+                            movies[folder_id][q] = []
+                            movies[folder_id][q].append(movie_data)
+            except:
+                pass
 
 
         #print movies
@@ -431,12 +472,17 @@ class HttpData:
 
         return info
 
-class ResolveLink(xbmcup.app.Handler, HttpData, Render):
+class ResolveLink(xbmcup.app.Handler, HttpData, Render, FingerPrint):
+
+    playerKeyParams = {
+		'key' : '',
+        'g'	  : 2,
+        'p'	  : 293
+    }
+
     def handle(self):
         item_dict = self.parent.to_dict()
         self.params = self.argv[0]
-
-        #print self.params
 
         movieInfo = self.get_movie_info(['/film/'+self.params['page']])
         item_dict['cover'] = movieInfo['cover']
@@ -445,29 +491,62 @@ class ResolveLink(xbmcup.app.Handler, HttpData, Render):
         resolution = self.params['resolution'].encode('utf-8')
         self.parent = Item(item_dict)
 
-        # print folder
-        # print resolution
-        #
-        # print movieInfo
-
-        #return 'http://cdn.3tv.im/hls/2/films/15/22345/26557/720p_Outsiders.s01e01.mp4/index.m3u8'
-
         if(len(movieInfo['movies']) > 0):
             for movies in movieInfo['movies']:
                 for q in movies['movies']:
                     if(q == resolution):
-                        # print movies['folder_title'].encode('utf-8')
                         if(movies['folder_title'] == folder or folder == ''):
                             for episode in movies['movies'][q]:
                                 if episode[0].find(self.params['file']) != -1:
-                                    return self.get_play_url(episode[1], resolution)
+                                    return self.get_play_url(episode[1], resolution, folder, episode[0])
 
         return None
 
-    def get_play_url(self, url, resolution):
-        parsed_url = urlparse.urlparse(self.get_iframe(url))
-        pl_url = "http://%s/m3u8/%s.m3u8" % (parsed_url[1], url.split('/')[2])
-        return self.get_selected_playlist(pl_url, resolution)
+    def get_play_url(self, url, resolution, folder, episodename):
+
+        fp = self.getFingerprint()
+        self.ajaxpost(SITE_URL+'/film/index/imprint', fp['components'])
+        pl_url = self.guard(url, folder, episodename, fp['hash'])
+        m3u_url = self.ajax(pl_url, fp['hash'], fp['useragent'])
+        play_url = self.get_selected_playlist(m3u_url, resolution)
+        #print self.ajaxpost('http://player.tree.tv/guard/preview', {'fileId' : 177446, 'source':1, 'userId':'false'})
+        return play_url
+
+    def guard(self, url, folder, episodename, fprint):
+        self.skc = ''
+        for x in range(0, 3):
+            key = int(self.calculateKey(1,7))
+            response = self.ajaxpost('http://player.tree.tv/guard', {'key' : key})
+            t = json.loads(response, 'utf-8')
+            if(t['p'] == self.playerKeyParams['p'] or t['g'] == self.playerKeyParams['g']):
+                n = math.pow(t['s_key'], self.playerKeyParams['key'])
+                self.skc = int(math.fmod(n, t['p']))
+            else:
+                self.playerKeyParams['p'] = t['p']
+                self.playerKeyParams['g'] = t['g']
+
+            if(self.skc != ''):
+                try:
+                    responsejson = self.ajaxpost('http://player.tree.tv/guard/guard/', {'file' : int(url.split('/')[2]), 'source': 1, 'skc' : self.skc}, fprint)
+                    fileinfo = json.loads(responsejson, 'utf-8')
+                    for source in fileinfo:
+                        if(source['name'] == folder):
+                            for movie in source['sources']:
+                                if(movie['label'] == '_'+episodename):
+                                    return movie['src']
+                except:
+                    xbmcup.gui.message('Не удалось загрузить плейлист')
+                    return ''
+
+                #print fileinfo
+                #return fileinfo[0]['sources'][0]['src']
+        return None
+
+    def calculateKey(self, e, t):
+        self.playerKeyParams['key'] = math.floor(random.uniform(0, 0.99) * (t - e + 1)) + e
+        t = math.pow(self.playerKeyParams['g'], self.playerKeyParams['key'])
+        n = math.fmod(t, self.playerKeyParams['p'])
+        return n
 
     def get_iframe(self, url):
         html = self.ajax(SITE_URL+url)
@@ -477,15 +556,15 @@ class ResolveLink(xbmcup.app.Handler, HttpData, Render):
         self.ajax(iframe_url.replace('/?', '/list/?')) #если не загружать эту ссылку - не всегда отдает плейлист
         return iframe_url
 
-    def get_selected_playlist(self, general_pl_url, resulution):
-        html = self.ajax(general_pl_url)
+    def get_selected_playlist(self, general_pl, resulution):
+        html = general_pl
         if not html: return None
         html = html.encode('utf-8').split("\n")
         return_next = False
         for line in html:
             if(return_next):
-                print line
-                return line
+                #print line
+                return line+'|Origin=http://player.'+SITE_DOMAIN
             if(line.find('x'+resulution) != -1):
                 return_next = True
 

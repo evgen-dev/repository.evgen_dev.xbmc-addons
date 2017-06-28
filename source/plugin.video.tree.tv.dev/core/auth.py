@@ -44,7 +44,7 @@ class Auth:
         if(xbmcup.system.fs.exists('sandbox://'+COOKIE_FILE)):
             with open(self.cookie_file, 'rb') as f:
                 return pickle.load(f)
-        return {}
+        return xbmcup.request.cookies.RequestsCookieJar()
 
 
     def reset_auth(self, reset_settings=False):
