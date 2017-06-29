@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-import os, re, sys, json, urllib, hashlib, traceback, urlparse, random, math, time
+import os, re, sys, json, traceback, random, math
 import xbmcup.app, xbmcup.db, xbmcup.system, xbmcup.net, xbmcup.parser, xbmcup.gui
 import xbmc, cover, xbmcplugin, xbmcgui
 from xbmcup.app import Item
@@ -8,7 +8,7 @@ from common import Render
 from auth import Auth
 from fingerprint import FingerPrint
 from defines import *
-from pprint import pprint
+#from pprint import pprint
 
 reload(sys)
 sys.setdefaultencoding("UTF8")
@@ -21,19 +21,28 @@ except:
 #log = open(xbmcup.system.fs('sandbox://myprog.log'), "a")
 #sys.stdout = log
 
-class HttpData:
+class HttpData(FingerPrint):
+    currentFingerPrint = None
+    noAuthCookie = {}
+
+    def getFingerPrint(self):
+        if self.currentFingerPrint == None:
+            return self.getFingerprint()
+        return self.currentFingerPrint
 
     def load(self, url):
+        self.currentFingerPrint = self.getFingerPrint()
         try:
             self.auth = Auth()
             self.cookie = self.auth.get_cookies()
-            # self.cookie.set('tt1', 'test', path='/', domain='.'+SITE_DOMAIN, expires=int(time.time())+(3600*4))
-            # print self.cookie
+
+            reqCookie = self.noAuthCookie if self.cookie==None else self.cookie
             headers = {
                 'Referer' : url,
-                'User-agent' : 'Mozilla/5.0 (Windows NT 6.1; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.3'
+                'User-agent' : self.currentFingerPrint['useragent']
             }
-            response = xbmcup.net.http.get(url, cookies=self.cookie, headers=headers)
+            response = xbmcup.net.http.get(url, cookies=reqCookie, headers=headers)
+            self.noAuthCookie = response.cookies
         except xbmcup.net.http.exceptions.RequestException:
             print traceback.format_exc()
             return None
@@ -45,6 +54,7 @@ class HttpData:
             return None
 
     def post(self, url, data):
+        self.currentFingerPrint = self.getFingerPrint()
         try:
             data
         except:
@@ -52,10 +62,13 @@ class HttpData:
         try:
             self.auth = Auth()
             self.cookie = self.auth.get_cookies()
+            reqCookie = self.noAuthCookie if self.cookie==None else self.cookie
             headers = {
-                'Referer' : url
+                'Referer' : url,
+                'User-agent' : self.currentFingerPrint['useragent']
             }
-            response = xbmcup.net.http.post(url, data, cookies=self.cookie, headers=headers)
+            response = xbmcup.net.http.post(url, data, cookies=reqCookie, headers=headers)
+            self.noAuthCookie = response.cookies
         except xbmcup.net.http.exceptions.RequestException:
             print traceback.format_exc()
             return None
@@ -66,7 +79,7 @@ class HttpData:
                 return response.text
             return None
 
-    def ajaxpost(self, url, data, fpcookie=''):
+    def ajaxpost(self, url, data):
         try:
             data
         except:
@@ -74,39 +87,51 @@ class HttpData:
         try:
             self.auth = Auth()
             self.cookie = self.auth.get_cookies()
-            #if(fpcookie != ''):
-            self.cookie.set('mycook', fpcookie, domain='.'+SITE_DOMAIN, path='/', expires=int(time.time())+(3600*4))
-            #pprint( self.cookie)
 
+            if(self.cookie != None):
+                self.cookie.set('mycook', self.currentFingerPrint['hash'])
+
+            if(self.noAuthCookie != None):
+                self.noAuthCookie.set('mycook', self.currentFingerPrint['hash'])
+
+            reqCookie = self.noAuthCookie if self.cookie==None else self.cookie
             headers = {
                 'Referer' : SITE_URL,
                 'X-Requested-With'  : 'XMLHttpRequest',
+                'User-agent' : self.currentFingerPrint['useragent']
             }
-            response = xbmcup.net.http.post(url, data, cookies=self.cookie, headers=headers)
+            response = xbmcup.net.http.post(url, data, cookies=reqCookie, headers=headers)
+            #After saving the fingerprint, you do not need to remember cookies
+            if(url != SITE_URL+'/film/index/imprint'):
+                self.noAuthCookie = response.cookies
         except xbmcup.net.http.exceptions.RequestException:
             print traceback.format_exc()
             return None
         else:
-            print response.text
             if(response.status_code == 200):
                 return response.text
             return None
 
-    def ajax(self, url, fpcookie='', useragent=None):
+    def ajax(self, url):
+        self.currentFingerPrint = self.getFingerPrint()
         try:
             self.auth = Auth()
             self.cookie = self.auth.get_cookies()
 
-            #if(fpcookie != ''):
-            self.cookie.set('mycook', fpcookie, domain='.'+SITE_DOMAIN, path='/')
-            #print self.cookie
+            if(self.cookie != None):
+                self.cookie.set('mycook', self.currentFingerPrint['hash'])
+
+            if(self.noAuthCookie != None):
+                self.noAuthCookie.set('mycook', self.currentFingerPrint['hash'])
+
+            reqCookie = self.noAuthCookie if self.cookie==None else self.cookie
             headers = {
                 'X-Requested-With'  : 'XMLHttpRequest',
                 'Referer'           : SITE_URL,
-                'User-agent'        : 'Mozilla/5.0 (Windows NT 6.1; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.36' if useragent==None else useragent
+                'User-agent'        : self.currentFingerPrint['useragent']
             }
-
-            response = xbmcup.net.http.get(url, cookies=self.cookie, headers=headers)
+            response = xbmcup.net.http.get(url, cookies=reqCookie, headers=headers)
+            self.noAuthCookie = response.cookies
         except xbmcup.net.http.exceptions.RequestException:
             print traceback.format_exc()
             return None
@@ -119,14 +144,11 @@ class HttpData:
             url = SITE_URL+"/"+url.strip('/')+"/page/"+str(page+1)
         else:
             url = SITE_URL+"/"+url.strip('/')
-        #print url
 
         if(search != '' and page == 0):
             html = self.post(url, {'usersearch' : search, 'filter' : 'all'})
         else:
             html = self.load(url)
-
-        #print html.encode('utf-8')
 
         if not html:
             return None, {'page': {'pagenum' : 0, 'maxpage' : 0}, 'data': []}
@@ -503,20 +525,38 @@ class ResolveLink(xbmcup.app.Handler, HttpData, Render, FingerPrint):
         return None
 
     def get_play_url(self, url, resolution, folder, episodename):
+        self.currentFingerPrint = self.getFingerPrint()
+        self.ajaxpost(SITE_URL+'/film/index/imprint', self.currentFingerPrint['components'])
+        # print self.ajaxpost('http://devisok.org/post.php', self.currentFingerPrint['components']) #cheking post data and headers
 
-        fp = self.getFingerprint()
-        self.ajaxpost(SITE_URL+'/film/index/imprint', fp['components'])
-        pl_url = self.guard(url, folder, episodename, fp['hash'])
-        m3u_url = self.ajax(pl_url, fp['hash'], fp['useragent'])
+        #Many thanks to 7brend7
+        # self.cookie1 = {'mycook': self.currentFingerPrint['hash']}
+        # print 'r1'
+        # response = xbmcup.net.http.post('http://tree.tv/film/index/imprint', self.currentFingerPrint['components'], allow_redirects=False, headers={
+        #         'X-Requested-With':'XMLHttpRequest',
+        #         'User-Agent': self.currentFingerPrint['useragent']
+        #     }, cookies=self.cookie1)
+        # print response.cookies
+
+        pl_url = self.guard(url, folder, episodename)
+
+        # self.cookie1 = response.cookies
+        # self.cookie1.set('mycook', self.currentFingerPrint['hash'], domain=".tree.tv")
+        # print 'r2'
+        # print self.cookie1
+        # m3u_url = xbmcup.net.http.get(pl_url, allow_redirects=False, cookies=self.cookie1, headers={'User-Agent': self.currentFingerPrint['useragent']})
+        # print m3u_url.text
+
+
+        m3u_url = self.ajax(pl_url)
         play_url = self.get_selected_playlist(m3u_url, resolution)
-        #print self.ajaxpost('http://player.tree.tv/guard/preview', {'fileId' : 177446, 'source':1, 'userId':'false'})
         return play_url
 
-    def guard(self, url, folder, episodename, fprint):
+    def guard(self, url, folder, episodename):
         self.skc = ''
         for x in range(0, 3):
             key = int(self.calculateKey(1,7))
-            response = self.ajaxpost('http://player.tree.tv/guard', {'key' : key})
+            response = self.ajaxpost(PLAYER_URL+'/guard', {'key' : key})
             t = json.loads(response, 'utf-8')
             if(t['p'] == self.playerKeyParams['p'] or t['g'] == self.playerKeyParams['g']):
                 n = math.pow(t['s_key'], self.playerKeyParams['key'])
@@ -526,8 +566,10 @@ class ResolveLink(xbmcup.app.Handler, HttpData, Render, FingerPrint):
                 self.playerKeyParams['g'] = t['g']
 
             if(self.skc != ''):
+                #print 'SKC: '+str(self.skc)
                 try:
-                    responsejson = self.ajaxpost('http://player.tree.tv/guard/guard/', {'file' : int(url.split('/')[2]), 'source': 1, 'skc' : self.skc}, fprint)
+                    responsejson = self.ajaxpost(PLAYER_URL+'/guard/guard/', {'file' : int(url.split('/')[2]), 'source': 1, 'skc' : self.skc})
+                    #print responsejson
                     fileinfo = json.loads(responsejson, 'utf-8')
                     for source in fileinfo:
                         if(source['name'] == folder):
@@ -535,11 +577,10 @@ class ResolveLink(xbmcup.app.Handler, HttpData, Render, FingerPrint):
                                 if(movie['label'] == '_'+episodename):
                                     return movie['src']
                 except:
-                    xbmcup.gui.message('Не удалось загрузить плейлист')
-                    return ''
-
-                #print fileinfo
-                #return fileinfo[0]['sources'][0]['src']
+                    #recursive trying to get playlist
+                    return self.guard(url, folder, episodename)
+                    #xbmcup.gui.message('Не удалось загрузить плейлист')
+                    #return ''
         return None
 
     def calculateKey(self, e, t):
@@ -564,7 +605,7 @@ class ResolveLink(xbmcup.app.Handler, HttpData, Render, FingerPrint):
         for line in html:
             if(return_next):
                 #print line
-                return line+'|Origin=http://player.'+SITE_DOMAIN
+                return line+'|Origin='+PLAYER_URL
             if(line.find('x'+resulution) != -1):
                 return_next = True
 
