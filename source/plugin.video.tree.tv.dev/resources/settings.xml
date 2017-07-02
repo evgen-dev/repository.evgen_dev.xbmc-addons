@@ -28,4 +28,13 @@
 	<category label="37001">
 		<setting id="hide_donate" type="bool" visible="true" label="37002" default="false" />
 	</category>
+	
+	<category label="37003">
+		<setting label="37007" type="lsep"/>
+		<setting label="37008" type="lsep"/>
+		<setting label="37004" type="text" id="activate_code" enable="!eq(1,true)" default=""/>
+		<setting id="is_activated" type="bool" visible="false" label="Is Active" default="false" />
+		<setting label="37005" type="action" option="close" visible="!eq(-1,true)+!eq(-2,)" enabled="false" action="RunScript($CWD/settings.py, activation)"/>
+        <setting label="37006" type="action" option="close" visible="!eq(-2,false)" action="RunScript($CWD/settings.py, reset_activation)"/>
+	</category>
 </settings>

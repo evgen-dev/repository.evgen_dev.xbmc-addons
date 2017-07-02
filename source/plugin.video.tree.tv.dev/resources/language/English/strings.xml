@@ -87,4 +87,10 @@
 	<string id="37000">[COLOR red]Нравится плагин?[/COLOR]</string>
 	<string id="37001">Дополнительные</string>
 	<string id="37002">Скрыть пункт "Нравится плагин?"</string>
+	<string id="37003">Активация</string>
+	<string id="37004">Код активации</string>
+	<string id="37005">Активировать плагин</string>
+	<string id="37006">Сбросить активацию</string>
+	<string id="37007">Для получения кода откройте http://treetv.tk</string>
+	<string id="37008">Это бесплатно!</string>
 </strings>

@@ -1,10 +1,17 @@
 # -*- coding: utf-8 -*-
 
-import xbmcup.app, cover
+import xbmcup.app, cover, xbmc, xbmcaddon
 from auth import Auth
+from core.defines import *
 
 class Index(xbmcup.app.Handler):
     def handle(self):
+        if(xbmcup.app.setting['is_activated'] == 'false'):
+            self.item(xbmcup.app.lang[37009], self.link('null'), folder=False, cover=cover.search)
+            self.item(xbmcup.app.lang[37010], self.link('list', {'dir' : 'films'}), folder=True, cover=cover.search)
+            # openAddonSettings2(PLUGIN_ID, 0, 3)
+            return
+
         Auth().autorize()
         self.item(xbmcup.app.lang[30112], self.link('search'),                        folder=True, cover=cover.search)
         self.item(xbmcup.app.lang[30120], self.link('filter', {'window' : ''}),       folder=True, cover=cover.treetv)

@@ -83,9 +83,19 @@ class CollectionList(AbstactList):
         if(response['page']['maxpage'] >= response['page']['pagenum']+1):
             self.item('[COLOR green]'+xbmcup.app.lang[30107]+'[/COLOR]', self.replace('collection', params), folder=True, cover=cover.next)
 
+def openAddonSettings2(addonId, id1=None, id2=None):
+    xbmc.executebuiltin('Addon.OpenSettings(%s)' % addonId)
+    if id1 != None:
+        xbmc.executebuiltin('SetFocus(%i)' % (id1 + 200))
+    if id2 != None:
+        xbmc.executebuiltin('SetFocus(%i)' % (id2 + 100))
 
 class MovieList(AbstactList):
     def handle(self):
+        if(xbmcup.app.setting['is_activated'] == 'false'):
+            openAddonSettings2(PLUGIN_ID, 0, 3)
+            return None
+
         params = self.argv[0]
         try:
             page = int(params['page'])

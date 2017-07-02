@@ -605,7 +605,8 @@ class ResolveLink(xbmcup.app.Handler, HttpData, Render, FingerPrint):
         for line in html:
             if(return_next):
                 #print line
-                return line+'|Origin='+PLAYER_URL
+                return line+'|Origin='+PLAYER_URL+'&User-agent='+self.currentFingerPrint['useragent']
+                #return 'http://devisok.org/post.php|Origin='+PLAYER_URL+'&User-agent='+self.currentFingerPrint['useragent']
             if(line.find('x'+resulution) != -1):
                 return_next = True
 

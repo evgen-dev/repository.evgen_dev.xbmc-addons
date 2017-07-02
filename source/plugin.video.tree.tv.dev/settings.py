@@ -7,6 +7,7 @@ sys.argv[0] = PLUGIN_ID
 import os, xbmcup.app, xbmcup.system, xbmcup.db, xbmcup.gui
 
 from core.auth import Auth
+from core.http import HttpData
 import core.cover
 
 def openAddonSettings(addonId, id1=None, id2=None):
@@ -40,3 +41,24 @@ if(sys.argv[1] == 'logout'):
     xbmcup.gui.message('Вы успешно вышли')
     openAddonSettings(PLUGIN_ID, 1, 0)
 
+if(sys.argv[1] == 'activation'):
+    response = xbmcup.net.http.get('http://treetv.tk/get_settings.php?key='+xbmcup.app.setting['activate_code'])
+    if response.text == 'error':
+        xbmcup.gui.message('Не удалось выполнить активацию, проверьте код.')
+    else:
+        xbmcup.app.setting['is_activated'] = 'true'
+        file = xbmcup.system.fs('sandbox://fingerprint.json')
+        xbmcup.gui.message('Плагин успешно активирован!')
+        f = open(file, 'w')
+        f.write(response.text)
+        f.close()
+        xbmc.executebuiltin('Container.Refresh()')
+    openAddonSettings(PLUGIN_ID, 0, 3)
+
+if(sys.argv[1] == 'reset_activation'):
+    xbmcup.app.setting['is_activated'] = 'false'
+    xbmcup.system.fs.delete('sandbox://fingerprint.json')
+    xbmcup.gui.message('Активация успешно сброшена!')
+    xbmcup.app.setting['activate_code'] = ''
+    openAddonSettings(PLUGIN_ID, 0, 3)
+    xbmc.executebuiltin('Container.Refresh()')
