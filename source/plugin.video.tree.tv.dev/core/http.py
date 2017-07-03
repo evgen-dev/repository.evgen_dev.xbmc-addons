@@ -553,6 +553,7 @@ class ResolveLink(xbmcup.app.Handler, HttpData, Render, FingerPrint):
         return play_url
 
     def guard(self, url, folder, episodename):
+        episodename = episodename.strip()
         self.skc = ''
         for x in range(0, 3):
             key = int(self.calculateKey(1,7))
@@ -569,15 +570,23 @@ class ResolveLink(xbmcup.app.Handler, HttpData, Render, FingerPrint):
                 #print 'SKC: '+str(self.skc)
                 try:
                     responsejson = self.ajaxpost(PLAYER_URL+'/guard/guard/', {'file' : int(url.split('/')[2]), 'source': 1, 'skc' : self.skc})
-                    #print responsejson
                     fileinfo = json.loads(responsejson, 'utf-8')
                     for source in fileinfo:
                         if(source['name'] == folder or folder == ''):
                             for movie in source['sources']:
-                                if(movie['label'] == '_'+episodename):
+                                if(movie['label'].strip() == '_'+episodename):
                                     return movie['src']
+
+                    return None
                 except:
+                    print traceback.format_exc()
                     #recursive trying to get playlist
+                    self.playerKeyParams = {
+                        'key' : '',
+                        'g'	  : 2,
+                        'p'	  : 293
+                    }
+                    self.skc = ''
                     return self.guard(url, folder, episodename)
                     #xbmcup.gui.message('Не удалось загрузить плейлист')
                     #return ''
