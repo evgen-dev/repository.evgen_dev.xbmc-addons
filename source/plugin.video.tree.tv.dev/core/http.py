@@ -572,7 +572,7 @@ class ResolveLink(xbmcup.app.Handler, HttpData, Render, FingerPrint):
                     #print responsejson
                     fileinfo = json.loads(responsejson, 'utf-8')
                     for source in fileinfo:
-                        if(source['name'] == folder):
+                        if(source['name'] == folder or folder == ''):
                             for movie in source['sources']:
                                 if(movie['label'] == '_'+episodename):
                                     return movie['src']
