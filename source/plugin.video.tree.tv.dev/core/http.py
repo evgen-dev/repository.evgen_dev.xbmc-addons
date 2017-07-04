@@ -92,7 +92,10 @@ class HttpData(FingerPrint):
                 self.cookie.set('mycook', self.currentFingerPrint['hash'])
 
             if(self.noAuthCookie != None):
-                self.noAuthCookie.set('mycook', self.currentFingerPrint['hash'])
+                try:
+                    self.noAuthCookie.set('mycook', self.currentFingerPrint['hash'])
+                except:
+                    pass
 
             reqCookie = self.noAuthCookie if self.cookie==None else self.cookie
             headers = {
@@ -122,7 +125,10 @@ class HttpData(FingerPrint):
                 self.cookie.set('mycook', self.currentFingerPrint['hash'])
 
             if(self.noAuthCookie != None):
-                self.noAuthCookie.set('mycook', self.currentFingerPrint['hash'])
+                try:
+                    self.noAuthCookie.set('mycook', self.currentFingerPrint['hash'])
+                except:
+                    pass
 
             reqCookie = self.noAuthCookie if self.cookie==None else self.cookie
             headers = {

@@ -16,8 +16,11 @@ except:
 CACHE = xbmcup.db.Cache(xbmcup.system.fs('sandbox://'+CACHE_DATABASE))
 SQL = xbmcup.db.SQL(xbmcup.system.fs('sandbox://'+CACHE_DATABASE))
 
+#log = open(xbmcup.system.fs('sandbox://myprog.log'), "a")
+#sys.stdout = log
+
 class AbstactList(xbmcup.app.Handler, HttpData, Render):
-    def add_movies(self, response, ifempty=30111):
+    def add_movies(self, response, ifempty=30111, hide_epmty=False):
         if(len(response['data']) > 0):
             for movie in response['data']:
                 menu = []
@@ -31,7 +34,8 @@ class AbstactList(xbmcup.app.Handler, HttpData, Render):
                           self.link('quality-list', {'movie_page' : movie['url'], 'cover' : movie['img']}),
                           folder=True, cover=movie['img'], menu=menu)
         else:
-            self.item(u'[COLOR red]['+xbmcup.app.lang[ifempty]+'][/COLOR]', self.link('null'), folder=False, cover=cover.info)
+            if(hide_epmty == False):
+                self.item(u'[COLOR red]['+xbmcup.app.lang[ifempty]+'][/COLOR]', self.link('null'), folder=False, cover=cover.info)
 
 
 class CollectionList(AbstactList):
@@ -139,6 +143,11 @@ class SearchList(AbstactList):
             page = 0
 
         try:
+            is_united_search = int(params['is_united'])
+        except:
+            is_united_search = 0
+
+        try:
             req_count = int(xbmcup.app.setting['search_history'])
         except:
             req_count = 0
@@ -155,7 +164,6 @@ class SearchList(AbstactList):
             usersearch = params['usersearch']
             vsearch = params['vsearch']
         except:
-
             if(len(history)):
                 history = list(history)
                 values = ['[COLOR yellow]'+xbmcup.app.lang[30108]+'[/COLOR]']
@@ -203,23 +211,29 @@ class SearchList(AbstactList):
             page_url = "search"
         md5 = hashlib.md5()
         md5.update(params['usersearch']+'/search/page/'+str(page))
+
+        #print params
         #md5.update(params['usersearch'])
         response = CACHE(str(md5.hexdigest()), self.get_movies, page_url, page, 'main_content_item', False, usersearch)
 
-        self.item(u'[COLOR yellow]'+xbmcup.app.lang[30108]+'[/COLOR]', self.link('search'), folder=True, cover=cover.search)
-        self.item('[COLOR blue]['+xbmcup.app.lang[30109]+': '+vsearch+'][/COLOR]',
-                  self.link('null'), folder=False, cover=cover.info)
+        if(is_united_search == 0):
+            self.item(u'[COLOR yellow]'+xbmcup.app.lang[30108]+'[/COLOR]', self.link('search'), folder=True, cover=cover.search)
+            self.item('[COLOR blue]['+xbmcup.app.lang[30109]+': '+vsearch+'][/COLOR]', self.link('null'), folder=False, cover=cover.info)
 
-        if(response['page']['pagenum'] > 1):
+        if(response['page']['pagenum'] > 1 and is_united_search == 0):
            params['page'] = page-1
            self.item('[COLOR green]'+xbmcup.app.lang[30106]+'[/COLOR]', self.replace('search', params), folder=True, cover=cover.prev)
            params['page'] = page+1
 
-        self.add_movies(response)
+        hide_epmty = is_united_search > 0
+
+        self.add_movies(response, hide_epmty=hide_epmty)
 
         params['page'] = page+1
-        if(response['page']['maxpage'] >= response['page']['pagenum']+1):
+        if(response['page']['maxpage'] >= response['page']['pagenum']+1 and is_united_search == 0):
            self.item(u'[COLOR green]'+xbmcup.app.lang[30107]+'[/COLOR]', self.replace('search', params), folder=True, cover=cover.next)
+
+        self.render_items()
 
 
 class BookmarkList(AbstactList):

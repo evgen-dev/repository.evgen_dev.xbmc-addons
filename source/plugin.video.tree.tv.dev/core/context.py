@@ -69,7 +69,12 @@ class ContextMenu(xbmcup.app.Handler, HttpData, Render):
                 self.add_bookmark({'id' : params['id'], 'dir' : hrefs[ret]})
 
     def del_bookmark(self, params):
-        resp = self.ajax('%s/film/index/deletefromfavorietes?id_film=%s' % (SITE_URL, params['id']))
+        #xbmc.log('del_bookmark')
+        try:
+            resp = self.ajax('%s/film/index/deletefromfavorietes?id_film=%s' % (SITE_URL, params['id']))
+        except:
+            #xbmc.log(traceback.format_exc())
+            raise
         try:
             resp = json.loads(resp)
             if(resp['result'] == True):
@@ -77,7 +82,8 @@ class ContextMenu(xbmcup.app.Handler, HttpData, Render):
             else:
                 xbmcup.gui.message(xbmcup.app.lang[30155].encode('utf-8'))
         except:
-            pass
+           # xbmc.log('test');
+            print traceback.format_exc()
         xbmc.executebuiltin('Container.Refresh()')
 
 

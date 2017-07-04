@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-import xbmcup.app, xbmc
+import xbmcup.app, xbmc, xbmcplugin
 
 class Render:
     def render_items(self, type='movies'):
