@@ -27,5 +27,7 @@
 	
 	<category label="37001">
 		<setting id="hide_donate" type="bool" visible="true" label="37002" default="false" />
+		<setting type="bool" id="united_search" visible="false" default="true"/>
+		<setting type="text" id="us_command" visible="false" default="keyword=" />
 	</category>
 </settings>

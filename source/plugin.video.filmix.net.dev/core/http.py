@@ -93,15 +93,12 @@ class HttpData:
         else:
             url = SITE_URL+"/"+url.strip('/')
 
-        print url
+        # print url
 
         if(search != ''):
             html = self.ajax(url)
         else:
             html = self.load(url)
-
-        #print html.encode('utf-8')
-        print url
 
         if not html:
             return None, {'page': {'pagenum' : 0, 'maxpage' : 0}, 'data': []}
@@ -152,12 +149,11 @@ class HttpData:
                     information = '[COLOR white]['+', '.join(dop_information)+'][/COLOR]'
 
                 movieposter = href.find('img', class_='poster').get('src')
-
-                movie_url = href.find('a').get('href'),
-                movie_id = re.compile('/([\d]+)-', re.S).findall(movie_url[0])[0]
+                movie_url = href.find('a', class_='watch').get('href')
+                movie_id = re.compile('/([\d]+)-', re.S).findall(movie_url)[0]
 
                 result['data'].append({
-                        'url': movie_url[0],
+                        'url': movie_url,
                         'id': movie_id,
                         'not_movie': not_movie,
                         'quality': self.format_quality(quality),
@@ -212,6 +208,11 @@ class HttpData:
 
         html = html.encode('utf-8')
         soup = xbmcup.parser.html(self.strip_scripts(html))
+
+        try:
+            movieInfo['is_proplus'] = len(soup.find('span', class_='proplus'))
+        except:
+            movieInfo['is_proplus'] = 0
 
         #print self.strip_scripts(html)
         try:
@@ -329,7 +330,7 @@ class HttpData:
         except:
             print traceback.format_exc()
 
-        print movieInfo
+        #print movieInfo
 
         return movieInfo
 

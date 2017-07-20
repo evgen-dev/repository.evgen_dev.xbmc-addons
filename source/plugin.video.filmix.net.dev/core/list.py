@@ -73,6 +73,11 @@ class SearchList(AbstactList):
             params = {}
 
         try:
+            is_united_search = int(params['is_united'])
+        except:
+            is_united_search = 0
+
+        try:
             page = int(params['page'])
         except:
             params['page'] = 0
@@ -140,14 +145,15 @@ class SearchList(AbstactList):
         page_url = "/engine/ajax/sphinx_search.php?story=%s&search_start=%s" % (params['usersearch'], page+1)
         md5 = hashlib.md5()
         #md5.update(page_url+'/page/'+str(page))
-        md5.update(params['usersearch']+'?v='+xbmcup.app.addon['version'])
+        md5.update(params['usersearch'].encode('utf8')+'?v='+xbmcup.app.addon['version'])
         response = CACHE(str(md5.hexdigest()), self.get_movies, page_url, page, '', False, usersearch)
 
-        self.item(u'[COLOR yellow]'+xbmcup.app.lang[30108]+'[/COLOR]', self.link('search'), folder=True, cover=cover.search)
-        self.item('[COLOR blue]['+xbmcup.app.lang[30109]+': '+vsearch+'][/COLOR]',
+        if(is_united_search == 0):
+            self.item(u'[COLOR yellow]'+xbmcup.app.lang[30108]+'[/COLOR]', self.link('search'), folder=True, cover=cover.search)
+            self.item('[COLOR blue]['+xbmcup.app.lang[30109]+': '+vsearch+'][/COLOR]',
                   self.link('null'), folder=False, cover=cover.info)
 
-        if(response['page']['pagenum'] > 1):
+        if(is_united_search==0 and response['page']['pagenum'] > 1):
             params['page'] = page-1
             self.item('[COLOR green]'+xbmcup.app.lang[30106]+'[/COLOR]', self.replace('search', params), cover=cover.prev, folder=True)
             params['page'] = page+1
@@ -155,8 +161,9 @@ class SearchList(AbstactList):
         self.add_movies(response)
 
         params['page'] = page+1
-        if(response['page']['maxpage'] >= response['page']['pagenum']+1):
-            self.item(u'[COLOR green]'+xbmcup.app.lang[30107]+'[/COLOR]', self.replace('search', params), cover=cover.next, folder=True)
+        if(is_united_search == 0):
+            if(response['page']['maxpage'] >= response['page']['pagenum']+1):
+                self.item(u'[COLOR green]'+xbmcup.app.lang[30107]+'[/COLOR]', self.replace('search', params), cover=cover.next, folder=True)
 
 
 class BookmarkList(AbstactList):
@@ -243,7 +250,7 @@ class QualityList(xbmcup.app.Handler, HttpData, Render):
         else:
             self.def_dir=  self.params['sub_dir']
 
-        print default_quality
+        #print default_quality
 
         if(default_quality != None and self.params['quality_dir'] == None):
             try:
@@ -266,12 +273,12 @@ class QualityList(xbmcup.app.Handler, HttpData, Render):
                                     self.params['quality_dir'] = default_quality
                                 except:
                                     pass
-        print self.movieInfo['movies']
+        #print self.movieInfo['movies']
         #если на сайте несколько папок с файлами
         if((len(self.movieInfo['movies']) > 1 and self.params['sub_dir'] == None) or self.movieInfo['no_files'] != None):
             self.show_folders()
 
-        #если эпизоды есть в разном качествве
+        #если эпизоды есть в разном качестве
         elif(self.movieInfo['episodes'] == True and
             len(self.movieInfo['movies'][self.def_dir]['movies']) > 1 and
             self.params['quality_dir'] == None):
@@ -329,7 +336,7 @@ class QualityList(xbmcup.app.Handler, HttpData, Render):
 
         resolutions = []
         for movie in movies:
-            if(movie != "1080p"):
+            if(movie != "1080p" or self.movieInfo['is_proplus'] > 0):
                 resolutions.append(int(movie))
 
         resolutions.sort()
