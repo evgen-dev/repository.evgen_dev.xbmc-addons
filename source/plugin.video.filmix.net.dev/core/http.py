@@ -169,7 +169,10 @@ class HttpData:
         else:
             return cache_minutes, result
 
-    def decode_direct_media_url(self, encoded_url):
+    def decode_direct_media_url(self, encoded_url, checkhttp=False):
+        if(checkhttp == True and (encoded_url.find('http://') != -1 or encoded_url.find('https://') != -1)):
+            return False
+
         codec_a = ("l", "u", "T", "D", "Q", "H", "0", "3", "G", "1", "f", "M", "p", "U", "a", "I", "6", "k", "d", "s", "b", "W", "5", "e", "y", "=")
         codec_b = ("w", "g", "i", "Z", "c", "R", "z", "v", "x", "n", "N", "2", "8", "J", "X", "t", "9", "V", "7", "4", "B", "m", "Y", "o", "L", "h")
         i = 0
@@ -179,7 +182,6 @@ class HttpData:
             encoded_url = encoded_url.replace(a, '___')
             encoded_url = encoded_url.replace(b, a)
             encoded_url = encoded_url.replace('___', b)
-
         return base64.b64decode(encoded_url)
 
     def format_direct_link(self, source_link, q):
@@ -227,8 +229,9 @@ class HttpData:
                 raise
 
             for translate in player_data:
-                js_string = self.decode_direct_media_url(player_data[translate])
-                print js_string
+                js_string = self.decode_direct_media_url(player_data[translate], True)
+                if(js_string == False):
+                    continue
                 if(js_string.find('.txt') != -1):
                     playlist = self.decode_direct_media_url(self.load(js_string))
 
