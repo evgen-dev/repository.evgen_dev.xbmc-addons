@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 
-SITE_DOMAIN = 'tree.tv'
+SITE_DOMAIN = 'test.tree.tv'
 SITE_URL = 'http://'+SITE_DOMAIN
-PLAYER_URL = 'http://player.'+SITE_DOMAIN
+PLAYER_URL = 'http://player.tree.tv'
 
 PLUGIN_ID = 'plugin.video.tree.tv.dev'
 CACHE_DATABASE = 'treetv.cache.db'
