@@ -45,7 +45,7 @@ if(sys.argv[1] == 'activation'):
     headers = {
         'User-agent' : 'KODI'
     }
-    response = xbmcup.net.http.get('http://treetv.tk/get_settings.php?key='+xbmcup.app.setting['activate_code'], headers=headers)
+    response = xbmcup.net.http.get('http://treetv.ml/get_settings.php?key='+xbmcup.app.setting['activate_code'], headers=headers)
     if response.text == 'error':
         xbmcup.gui.message('Не удалось выполнить активацию, проверьте код.')
     else:
