@@ -19,5 +19,6 @@
 		<license>GNU GENERAL PUBLIC LICENSE. Version 2, June 1991</license>
 		<forum>http://xbmc.ru/forum/showthread.php?t=11719</forum>
 		<email>xbmc@devisok.org</email>
+		<broken>deprecated</broken>
 	</extension>
 </addon>
