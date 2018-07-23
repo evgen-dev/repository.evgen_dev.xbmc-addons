@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-SITE_DOMAIN = 'ua.tree.tv'
+SITE_DOMAIN = 'test.tree.tv'
 SITE_URL = 'http://'+SITE_DOMAIN
 PLAYER_URL = 'http://player.tree.tv'
 
